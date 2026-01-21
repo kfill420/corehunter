@@ -1,5 +1,0 @@
-const actionController = require('../controllers/actionController.js.useless');
-
-module.exports = async (fastify) => {
-  fastify.post('/action', actionController.handleAction);
-};

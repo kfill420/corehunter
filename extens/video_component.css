@@ -1,5 +1,18 @@
+html, body {
+    background: transparent !important;
+}
+
+#app, #game-ui { background: transparent !important; }
+
+#app {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 #game-ui {
   display: flex;
+  flex-direction: column;
   gap: 12px;
   justify-content: center;
   margin-top: 20px;
@@ -9,9 +22,9 @@
 #game-ui button {
   background: linear-gradient(135deg, #9146FF, #772CE8);
   border: none;
-  padding: 12px 20px;
+  padding: 40px 60px;
   border-radius: 10px;
-  font-size: 16px;
+  font-size: 80px;
   font-weight: 600;
   color: white;
   cursor: pointer;
@@ -59,9 +72,9 @@
   right: 20px;
   background: rgba(0, 0, 0, 0.85);
   color: white;
-  padding: 10px 14px;
+  padding: 30px 40px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 70px;
   opacity: 1;
   transition: opacity 0.3s ease, transform 0.3s ease;
   transform: translateY(0);
