@@ -1,47 +1,51 @@
+// controllers/extensionController.js
 const jwt = require('jsonwebtoken');
-const cooldownService = require('../services/cooldownService');
-const pubsubService = require('../services/pubsubService');
+const { isUserSub } = require('../services/twitchApi');
 
-exports.handleAction = async (req, reply) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return reply.status(401).send({ error: 'Missing Authorization header' });
+function verifyToken(req, reply) {
+  const auth = req.headers.authorization;
+  if (!auth) {
+    reply.code(401).send();
+    return null;
   }
 
-  const token = authHeader.replace('Bearer ', '');
+  const token = auth.replace('Bearer ', '');
 
-  let decoded;
   try {
-    decoded = jwt.verify(token, process.env.EXT_SECRET);
+    return jwt.verify(
+      token,
+      Buffer.from(process.env.EXT_SECRET, 'base64'),
+      { algorithms: ['HS256'] }
+    );
   } catch (err) {
-    return reply.status(401).send({ error: 'Invalid Twitch token' });
+    console.error('JWT ERROR:', err.message);
+    reply.code(401).send();
+    return null;
+  }
+}
+
+exports.getMe = async (req, reply) => {
+  const decoded = verifyToken(req, reply);
+  if (!decoded) return;
+
+  const { role, user_id, channel_id } = decoded;
+
+  if (role === 'broadcaster') {
+    return { canInteract: true };
   }
 
-  const userId = decoded.user_id;      // 👈 VRAI user Twitch
-  const channelId = decoded.channel_id;
-  const role = decoded.role;
+  const isSub = await isUserSub(user_id, channel_id);
+  return { canInteract: isSub };
+};
 
-  const { action } = req.body;
+exports.postAction = async (req, reply, fastify) => {
+  const decoded = verifyToken(req, reply);
+  if (!decoded) return;
 
-  if (!action) {
-    return reply.status(400).send({ error: 'Missing action' });
-  }
-
-  // Cooldown par utilisateur
-  if (cooldownService.isOnCooldown(userId, 5000)) {
-    return reply.status(429).send({ error: 'Cooldown en cours' });
-  }
-
-  cooldownService.updateCooldown(userId);
-
-  await pubsubService.broadcastAction({
-    userId,
-    channelId,
-    role,
-    action,
-    timestamp: Date.now()
+  fastify.pubsub.publish('game-action', {
+    user: decoded.user_id,
+    action: req.body.action
   });
 
-  reply.send({ success: true });
+  return { ok: true };
 };
