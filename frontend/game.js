@@ -1,4 +1,4 @@
-// frontend/game.js
+import MainScene from "./scenes/mainScene.js";
 
 const socket = io("http://localhost:3001");
 
@@ -8,32 +8,19 @@ socket.on("connect", () => {
 
 socket.on("user-action", (data) => {
   console.log("[Game] Action reçue :", data);
-  // Ici tu déclencheras les animations Phaser
+  window.gameScene?.handleAction(data.action);
 });
 
-// Phaser minimal
 const config = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
-  canvas: document.getElementById("game-canvas"),
-  scene: {
-    preload,
-    create,
-    update
-  }
+  parent: "game-container",
+  physics: {
+    default: "arcade",
+    arcade: { debug: false }
+  },
+  scene: [MainScene]
 };
-
-let hero;
-
-function preload() {
-  this.load.image("hero", "./assets/hero.png");
-}
-
-function create() {
-  hero = this.add.sprite(400, 300, "hero");
-}
-
-function update() {}
 
 new Phaser.Game(config);

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "echo 'Lancement frontend via Twitch Extension ou serveur statique'", 
+    "dev": "serve .",
     "build": "echo 'Pas de build nécessaire (HTML/JS vanilla)'"
   },
   "keywords": [],
@@ -14,5 +14,8 @@
   "dependencies": {
     "phaser": "^3.90.0",
     "socket.io-client": "^4.8.3"
+  },
+  "devDependencies": {
+    "serve": "^14.2.5"
   }
 }
