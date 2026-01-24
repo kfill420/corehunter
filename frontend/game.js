@@ -13,9 +13,11 @@ socket.on("user-action", (data) => {
 
 const config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
   parent: "game-container",
+  scale: {
+    mode: Phaser.Scale.RESIZE,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
   physics: {
     default: "arcade",
     arcade: { debug: false }
