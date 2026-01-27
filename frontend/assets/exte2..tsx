@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.11.2" name="exte" tilewidth="16" tileheight="16" tilecount="750" columns="15">
- <editorsettings>
-  <export target="exte2..tsx" format="tsx"/>
- </editorsettings>
  <image source="exterior.png" width="240" height="800"/>
  <tile id="418">
   <objectgroup draworder="index" id="2">
@@ -52,9 +49,6 @@
   </objectgroup>
  </tile>
  <tile id="456">
-  <properties>
-   <property name="Collides" type="bool" value="true"/>
-  </properties>
   <objectgroup draworder="index" id="2">
    <object id="2" x="0.0909091" y="0.181818">
     <polygon points="0,0 9.90909,-0.0909091 3.36364,7.09091"/>

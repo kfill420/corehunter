@@ -25,110 +25,98 @@ export default class MainScene extends Phaser.Scene {
     map.createLayer("Ground1", tileset, 0, 0);
     map.createLayer("Ground2", tileset, 0, 0);
 
-    const obstacle0 = map.createLayer("Obstacle0", tileset, 0, 0); 
-    const obstacle1 = map.createLayer("Obstacle1", tileset, 0, 0); 
-    const obstacle2 = map.createLayer("Obstacle2", tileset, 0, 0); 
+    const obstacle0 = map.createLayer("Obstacle0", tileset, 0, 0);
+    const obstacle1 = map.createLayer("Obstacle1", tileset, 0, 0);
+    const obstacle2 = map.createLayer("Obstacle2", tileset, 0, 0);
     const obstacle3 = map.createLayer("Obstacle3", tileset, 0, 0);
 
-    const above = map.createLayer("Above1", tileset, 0, 0); 
-    above.setDepth(10);
+    const above = map.createLayer("Above1", tileset, 0, 0);
 
-    /* =========================
-       COLLISIONS
-    ========================= */
-    obstacle0.setCollisionFromCollisionGroup();
-    obstacle1.setCollisionFromCollisionGroup();
-    obstacle2.setCollisionFromCollisionGroup();
-    obstacle3.setCollisionFromCollisionGroup();
+    // On crée un container qui va forcer Phaser à respecter le depth
+    this.aboveContainer = this.add.container(0, 0);
+    this.aboveContainer.add(above);
+      
+    // Maintenant le depth fonctionne réellement
+    this.aboveContainer.setDepth(9999);
 
 
     /* =========================
-       HERO
+       COLLISIONS (Matter)
     ========================= */
-    this.hero = this.physics.add.sprite(
-      map.widthInPixels / 2,
-      map.heightInPixels / 2,
-      "hero"
-    ).setScale(0.1);
+    obstacle0.setCollisionBetween(1, 10000);
+    obstacle1.setCollisionBetween(1, 10000);
+    obstacle2.setCollisionBetween(1, 10000);
+    obstacle3.setCollisionBetween(1, 10000);
 
-    this.hero.setCollideWorldBounds(true);
+    // Convertit les tiles en bodies Matter
+    this.matter.world.convertTilemapLayer(obstacle0);
+    this.matter.world.convertTilemapLayer(obstacle1);
+    this.matter.world.convertTilemapLayer(obstacle2);
+    this.matter.world.convertTilemapLayer(obstacle3);
 
-    this.physics.add.collider(this.hero, obstacle0); 
-    this.physics.add.collider(this.hero, obstacle1); 
-    this.physics.add.collider(this.hero, obstacle2); 
-    this.physics.add.collider(this.hero, obstacle3);
+    /* =========================
+       HERO (Matter)
+    ========================= */
+    this.hero = this.matter.add
+      .sprite(
+        map.widthInPixels / 2,
+        map.heightInPixels / 2,
+        "hero"
+      )
+      .setScale(0.1);
+
+    // Hitbox circulaire (meilleur pour RPG)
+    this.hero.setCircle(12);
+    this.hero.setFixedRotation(); // empêche la rotation du sprite
+    this.hero.setOrigin(0.5, 0.7);
 
     /* =========================
        WORLD & CAMERA
     ========================= */
-
-    // World bounds = map size
-    this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-
-    // Camera bounds = map size
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-
-    // 🎥 Zoom x2
     this.cameras.main.setZoom(2);
-
-    // Camera follow hero
     this.cameras.main.startFollow(this.hero, true);
 
     /* =========================
        CONTROLS
     ========================= */
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.keys = this.input.keyboard.addKeys("Z,Q,S,D"); // ZQSD (AZERTY)
+    this.keys = this.input.keyboard.addKeys("Z,Q,S,D");
 
     /* =========================
        STATS
     ========================= */
-    this.speed = 180; // vitesse joueur
+    this.speed = 2.2; // vitesse Matter (plus faible que Arcade)
 
     /* =========================
-       DEBUG (optionnel)
+       DEBUG
     ========================= */
-    // this.cameras.main.setBackgroundColor('#000000');
+    // this.matter.world.createDebugGraphic();
   }
 
   /* =========================
      SOCKET ACTIONS
   ========================= */
   handleAction(action) {
-    if (action === "attack") {
-      console.log("➡ Animation attaque");
-      // future: this.hero.play("attack")
-    }
-
-    if (action === "heal") {
-      console.log("➡ Animation soin");
-      // future: fx + particules
-    }
-
-    if (action === "bomb") {
-      console.log("➡ Animation bombe");
-      // future: explosion + dégâts zone
-    }
+    if (action === "attack") console.log("➡ Animation attaque");
+    if (action === "heal") console.log("➡ Animation soin");
+    if (action === "bomb") console.log("➡ Animation bombe");
   }
 
   update() {
     const speed = this.speed;
 
-    this.hero.setVelocity(0);
+    let vx = 0;
+    let vy = 0;
 
-    if (this.cursors.left.isDown || this.keys.Q.isDown) {
-      this.hero.setVelocityX(-speed);
-    } else if (this.cursors.right.isDown || this.keys.D.isDown) {
-      this.hero.setVelocityX(speed);
-    }
+    if (this.cursors.left.isDown || this.keys.Q.isDown) vx = -speed;
+    else if (this.cursors.right.isDown || this.keys.D.isDown) vx = speed;
 
-    if (this.cursors.up.isDown || this.keys.Z.isDown) {
-      this.hero.setVelocityY(-speed);
-    } else if (this.cursors.down.isDown || this.keys.S.isDown) {
-      this.hero.setVelocityY(speed);
-    }
+    if (this.cursors.up.isDown || this.keys.Z.isDown) vy = -speed;
+    else if (this.cursors.down.isDown || this.keys.S.isDown) vy = speed;
 
-    // Diagonal normalization (évite speed boost en diagonale)
-    this.hero.body.velocity.normalize().scale(speed);
+    this.hero.setVelocity(vx, vy);
+    this.hero.setDepth(this.hero.y);
+
   }
 }
