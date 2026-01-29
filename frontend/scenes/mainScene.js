@@ -138,7 +138,7 @@ attack() {
       frames: Array.from({ length: 18 }, (_, i) => ({
         key: `hero-idle-${i}`
       })),
-      frameRate: 8,
+      frameRate: 20,
       repeat: -1
     });
 
@@ -149,7 +149,7 @@ attack() {
       frames: Array.from({ length: 12 }, (_, i) => ({
         key: `hero-run-${i}`
       })),
-      frameRate: 12,
+      frameRate: 24,
       repeat: -1
     });
 
@@ -158,7 +158,7 @@ attack() {
     this.anims.create({
         key: "attack",
         frames: Array.from({ length: 12 }, (_, i) => ({ key: `hero-attack-${i}` })),
-        frameRate: 15,
+        frameRate: 30,
         repeat: 0
     });
 
