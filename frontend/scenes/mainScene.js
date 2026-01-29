@@ -39,33 +39,32 @@ export default class MainScene extends Phaser.Scene {
     }
   }
   
-attack() {
+attack(pointer) {
     if (this.isAttacking) return;
 
     this.isAttacking = true;
-    this.heroSprite.play("attack");
+    this.heroSprite.play("attack", true);
 
-    // Déterminer la position de la hitbox selon la direction du sprite
-    const direction = this.heroSprite.flipX ? -20 : 20;
+    const angle = Phaser.Math.Angle.Between(this.heroSprite.x, this.heroSprite.y, pointer.worldX, pointer.worldY);
+
+    this.heroSprite.setFlipX(pointer.worldX < this.heroSprite.x);
+
+    const distance = 10;
+    const hx = this.heroSprite.x + Math.cos(angle) * distance;
+    const hy = this.heroSprite.y + Math.sin(angle) * distance;
     
-    // Créer une hitbox (capteur invisible)
-    const hitbox = this.matter.add.circle(
-        this.heroSprite.x + direction, 
-        this.heroSprite.y, 
-        15, 
-        { isSensor: true, label: 'heroHitbox' }
-    );
+    const hitbox = this.matter.add.circle(hx, hy, 5, { 
+        isSensor: true, 
+        label: 'heroHitbox' 
+    });
 
-    // Détection des ennemis touchés
-    this.matter.world.on('collisionstart', (event) => {
+    this.matter.world.once('collisionstart', (event) => {
         event.pairs.forEach(pair => {
             const { bodyA, bodyB } = pair;
-            if (bodyA === hitbox || bodyB === hitbox) {
-                const target = bodyA === hitbox ? bodyB : bodyA;
-                if (target.label === 'enemy') {
-                    console.log("Ennemi touché !");
-                    // Appelle ici une fonction target.gameObject.takeDamage()
-                }
+            const other = bodyA === hitbox ? bodyB : (bodyB === hitbox ? bodyA : null);
+            
+            if (other && other.label === 'enemy') {
+                console.log("Ennemi touché dans la direction du clic !");
             }
         });
     });
@@ -178,8 +177,10 @@ attack() {
         repeat: 0
     });
 
-    this.input.keyboard.on("keydown-SPACE", () => {
-        this.attack();
+    this.input.on("pointerdown", (pointer) => {
+        if (pointer.leftButtonDown()) {
+          this.attack(pointer)
+        }
     });
 
     this.cameraTarget = new Phaser.Math.Vector2(this.heroSprite.x, this.heroSprite.y);
@@ -208,8 +209,10 @@ attack() {
     if (this.cursors.up.isDown || this.keys.Z.isDown) vy = -1;
     else if (this.cursors.down.isDown || this.keys.S.isDown) vy = 1;
 
-    if (vx > 0) this.heroSprite.setFlipX(false);
-    else if (vx < 0) this.heroSprite.setFlipX(true);
+    if (!this.isAttacking) {
+      if (vx > 0) this.heroSprite.setFlipX(false);
+      else if (vx < 0) this.heroSprite.setFlipX(true);
+    }
 
     if (this.isAttacking) {
         if (this.heroSprite.anims.currentAnim?.key !== "attack") {
