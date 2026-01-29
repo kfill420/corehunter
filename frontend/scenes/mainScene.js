@@ -37,6 +37,13 @@ export default class MainScene extends Phaser.Scene {
           `hero-attack-${i}`, 
           `./assets/character/forest_ranger/3/kicking/0_Forest_Ranger_Kicking_${num}.png`);
     }
+
+    for (let i = 0; i <= 5; i++) {
+        const num = i.toString().padStart(3, "0");
+        this.load.image(
+          `hero-slide-${i}`, 
+          `./assets/character/forest_ranger/3/sliding/0_Forest_Ranger_Sliding_${num}.png`);
+    }
   }
   
 attack(pointer) {
@@ -74,6 +81,23 @@ attack(pointer) {
         this.isAttacking = false;
         this.matter.world.remove(hitbox);
         this.heroSprite.play("idle");
+    });
+}
+
+slide(vx, vy) {
+    if (!this.canSlide || this.isAttacking) return;
+    if (vx === 0 && vy === 0) return;
+
+    this.isSliding = true;
+    this.canSlide = false;
+    
+    this.slideSpeed = 0.45;
+    this.slideVec = new Phaser.Math.Vector2(vx, vy).normalize();
+    
+    this.heroSprite.play("slide", true);
+
+    this.time.delayedCall(3000, () => {
+        this.canSlide = true;
     });
 }
 
@@ -155,7 +179,7 @@ attack(pointer) {
       frames: Array.from({ length: 24 }, (_, i) => ({
         key: `hero-walk-${i}`
       })),
-      frameRate: 24,
+      frameRate: 44,
       repeat: -1
     });
 
@@ -171,10 +195,17 @@ attack(pointer) {
     this.isAttacking = false;
 
     this.anims.create({
-        key: "attack",
-        frames: Array.from({ length: 12 }, (_, i) => ({ key: `hero-attack-${i}` })),
-        frameRate: 30,
-        repeat: 0
+      key: "attack",
+      frames: Array.from({ length: 12 }, (_, i) => ({ key: `hero-attack-${i}` })),
+      frameRate: 30,
+      repeat: 0
+    });
+
+    this.anims.create({
+      key: "slide",
+      frames: Array.from({ length: 6 }, (_, i) => ({ key: `hero-slide-${i}` })),
+      frameRate: 20,
+      repeat: 0
     });
 
     this.input.on("pointerdown", (pointer) => {
@@ -190,15 +221,13 @@ attack(pointer) {
     this.cameras.main.setZoom(4);
 
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.keys = this.input.keyboard.addKeys("Z,Q,S,D,SHIFT");
+    this.keys = this.input.keyboard.addKeys("Z,Q,S,D,SHIFT,CTRL");
+    this.isSliding = false;
+    this.canSlide = true;
+    this.slideSpeed = 0;
   }
 
   update(time, delta) {
-
-    const isRunning = this.keys.SHIFT.isDown;
-    const attackMultiplier = this.isAttacking ? 0.2 : 1.0;
-    const baseSpeed = isRunning ? 0.10 : 0.05;
-    const normalizeSpeed = baseSpeed * delta * attackMultiplier;
 
     let vx = 0;
     let vy = 0;
@@ -209,26 +238,45 @@ attack(pointer) {
     if (this.cursors.up.isDown || this.keys.Z.isDown) vy = -1;
     else if (this.cursors.down.isDown || this.keys.S.isDown) vy = 1;
 
-    if (!this.isAttacking) {
-      if (vx > 0) this.heroSprite.setFlipX(false);
-      else if (vx < 0) this.heroSprite.setFlipX(true);
+    if (Phaser.Input.Keyboard.JustDown(this.keys.CTRL)) {
+      this.slide(vx, vy);
     }
 
-    if (this.isAttacking) {
-        if (this.heroSprite.anims.currentAnim?.key !== "attack") {
-            this.heroSprite.play("attack");
-        }
+    let finalVx, finalVy, currentSpeed;
+
+    if (this.isSliding) {
+      finalVx = this.slideVec.x;
+      finalVy = this.slideVec.y;
+      currentSpeed = this.slideSpeed * delta;
+      this.slideSpeed *= 0.975;
+      if (this.slideSpeed < 0.03) {
+        this.isSliding = false;
+        this.slideSpeed = 0
+      }
+    } else {
+      const isRunning = this.keys.SHIFT.isDown;
+      const attackMultiplier = this.isAttacking ? 0.2 : 1.0;
+      const baseSpeed = isRunning ? 0.10 : 0.05;
+      currentSpeed = baseSpeed * delta * attackMultiplier;
+      finalVx = vx;
+      finalVy = vy;
+    }
+
+    if (this.isSliding) {
+        if (this.heroSprite.anims.currentAnim?.key !== "slide") this.heroSprite.play("slide");
+    } else if (this.isAttacking) {
+        if (this.heroSprite.anims.currentAnim?.key !== "attack") this.heroSprite.play("attack");
     } else {
         if (vx !== 0 || vy !== 0) {
-            const animToPlay = isRunning ? "run" : "walk";
-            if (this.heroSprite.anims.currentAnim?.key !== animToPlay) {
-                this.heroSprite.play(animToPlay);
-            }
+            this.heroSprite.play(this.keys.SHIFT.isDown ? "run" : "walk", true);
         } else {
-            if (this.heroSprite.anims.currentAnim?.key !== "idle") {
-                this.heroSprite.play("idle");
-            }
+            this.heroSprite.play("idle", true);
         }
+    }
+
+    if (!this.isAttacking && !this.isSliding) {
+      if (vx > 0) this.heroSprite.setFlipX(false);
+      else if (vx < 0) this.heroSprite.setFlipX(true);
     }
 
     const Matter = this.Matter;
@@ -245,8 +293,8 @@ attack(pointer) {
       }
     };
 
-    tryMove(vx * normalizeSpeed, 0);
-    tryMove(0, vy * normalizeSpeed);
+    tryMove(finalVx * currentSpeed, 0);
+    tryMove(0, finalVy * currentSpeed);
 
     this.logicPos.x = body.position.x;
     this.logicPos.y = body.position.y;
