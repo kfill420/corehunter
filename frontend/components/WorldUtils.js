@@ -12,7 +12,6 @@ export const setupWorld = (scene, map) => {
         if (!tileset) return;
 
         const textureKey = tileset.name.replace(/^.*[\\/]/, '').replace('.png', '').toLowerCase().split('_')[0];
-        console.log(textureKey);
         const sprite = scene.add.sprite(obj.x, obj.y, textureKey).setOrigin(0, 1);
         sortingGroup.add(sprite);
 

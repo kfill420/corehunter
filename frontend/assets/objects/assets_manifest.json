@@ -141,6 +141,18 @@
       "url": "./assets/objects/environment/Cailloux12_2x2.png"
     },
     {
+      "key": "cailloux13",
+      "url": "./assets/objects/environment/Cailloux13_1x1.png"
+    },
+    {
+      "key": "cailloux14",
+      "url": "./assets/objects/environment/Cailloux14_1x1.png"
+    },
+    {
+      "key": "cailloux15",
+      "url": "./assets/objects/environment/Cailloux15_1x1.png"
+    },
+    {
       "key": "cailloux1",
       "url": "./assets/objects/environment/Cailloux1_3x3.png"
     },

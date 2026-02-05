@@ -8,7 +8,7 @@
  "margin":0,
  "name":"Bushes",
  "spacing":0,
- "tilecount":93,
+ "tilecount":96,
  "tiledversion":"1.11.2",
  "tileheight":128,
  "tiles":[
@@ -1218,41 +1218,6 @@
             }
         }, 
         {
-         "id":73,
-         "image":"..\/Documents\/Preset\/2D\/Map\/top down\/map\/objects\/Puit1_3x3.png",
-         "imageheight":48,
-         "imagewidth":48
-        }, 
-        {
-         "id":74,
-         "image":"..\/Documents\/Preset\/2D\/Map\/top down\/map\/objects\/Puit2_3x3.png",
-         "imageheight":48,
-         "imagewidth":48,
-         "objectgroup":
-            {
-             "draworder":"index",
-             "name":"",
-             "objects":[
-                    {
-                     "ellipse":true,
-                     "height":15.375,
-                     "id":2,
-                     "name":"",
-                     "rotation":0,
-                     "type":"",
-                     "visible":true,
-                     "width":22,
-                     "x":12.625,
-                     "y":19.25
-                    }],
-             "opacity":1,
-             "type":"objectgroup",
-             "visible":true,
-             "x":0,
-             "y":0
-            }
-        }, 
-        {
          "id":75,
          "image":"..\/Documents\/Preset\/2D\/Map\/top down\/map\/objects\/Rocher1_4x4.png",
          "imageheight":64,
@@ -1963,6 +1928,82 @@
          "image":"..\/Documents\/Preset\/2D\/Map\/top down\/map\/objects\/Buisson9_3x3.png",
          "imageheight":48,
          "imagewidth":48
+        }, 
+        {
+         "id":94,
+         "image":"..\/Documents\/Preset\/2D\/Map\/top down\/map\/objects\/Puit1_3x3.png",
+         "imageheight":48,
+         "imagewidth":48,
+         "objectgroup":
+            {
+             "draworder":"index",
+             "name":"",
+             "objects":[
+                    {
+                     "ellipse":true,
+                     "height":14.3333333333333,
+                     "id":3,
+                     "name":"",
+                     "rotation":0,
+                     "type":"",
+                     "visible":true,
+                     "width":20,
+                     "x":14.6666666666667,
+                     "y":20
+                    }],
+             "opacity":1,
+             "type":"objectgroup",
+             "visible":true,
+             "x":0,
+             "y":0
+            }
+        }, 
+        {
+         "id":95,
+         "image":"..\/Documents\/Preset\/2D\/Map\/top down\/map\/objects\/Puit2_3x3.png",
+         "imageheight":48,
+         "imagewidth":48,
+         "objectgroup":
+            {
+             "draworder":"index",
+             "name":"",
+             "objects":[
+                    {
+                     "ellipse":true,
+                     "height":14,
+                     "id":1,
+                     "name":"",
+                     "rotation":0,
+                     "type":"",
+                     "visible":true,
+                     "width":20,
+                     "x":14,
+                     "y":21.3333333333333
+                    }],
+             "opacity":1,
+             "type":"objectgroup",
+             "visible":true,
+             "x":0,
+             "y":0
+            }
+        }, 
+        {
+         "id":96,
+         "image":"..\/Documents\/Preset\/2D\/Map\/top down\/map\/objects\/Cailloux13_1x1.png",
+         "imageheight":16,
+         "imagewidth":16
+        }, 
+        {
+         "id":97,
+         "image":"..\/Documents\/Preset\/2D\/Map\/top down\/map\/objects\/Cailloux14_1x1.png",
+         "imageheight":16,
+         "imagewidth":16
+        }, 
+        {
+         "id":98,
+         "image":"..\/Documents\/Preset\/2D\/Map\/top down\/map\/objects\/Cailloux15_1x1.png",
+         "imageheight":16,
+         "imagewidth":16
         }],
  "tilewidth":160,
  "type":"tileset",
