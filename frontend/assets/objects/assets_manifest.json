@@ -1,0 +1,384 @@
+{
+  "images": [
+    {
+      "key": "arbre1",
+      "url": "./assets/objects/environment/Arbre1_4x4.png"
+    },
+    {
+      "key": "arbre2",
+      "url": "./assets/objects/environment/Arbre2_4x5.png"
+    },
+    {
+      "key": "arbre3",
+      "url": "./assets/objects/environment/Arbre3_4x5.png"
+    },
+    {
+      "key": "arbre4",
+      "url": "./assets/objects/environment/Arbre4_4x4.png"
+    },
+    {
+      "key": "arbre5",
+      "url": "./assets/objects/environment/Arbre5_5x6.png"
+    },
+    {
+      "key": "arbre6",
+      "url": "./assets/objects/environment/Arbre6_4x3.png"
+    },
+    {
+      "key": "arbre7",
+      "url": "./assets/objects/environment/Arbre7_4x5.png"
+    },
+    {
+      "key": "barrière10",
+      "url": "./assets/objects/environment/Barrière10_1x1.png"
+    },
+    {
+      "key": "barrière11",
+      "url": "./assets/objects/environment/Barrière11_1x1.png"
+    },
+    {
+      "key": "barrière12",
+      "url": "./assets/objects/environment/Barrière12_1x1.png"
+    },
+    {
+      "key": "barrière13",
+      "url": "./assets/objects/environment/Barrière13_1x1.png"
+    },
+    {
+      "key": "barrière14",
+      "url": "./assets/objects/environment/Barrière14_1x1.png"
+    },
+    {
+      "key": "barrière1",
+      "url": "./assets/objects/environment/Barrière1_1x1.png"
+    },
+    {
+      "key": "barrière2",
+      "url": "./assets/objects/environment/Barrière2_1x1.png"
+    },
+    {
+      "key": "barrière3",
+      "url": "./assets/objects/environment/Barrière3_1x1.png"
+    },
+    {
+      "key": "barrière4",
+      "url": "./assets/objects/environment/Barrière4_1x1.png"
+    },
+    {
+      "key": "barrière5",
+      "url": "./assets/objects/environment/Barrière5_1x1.png"
+    },
+    {
+      "key": "barrière6",
+      "url": "./assets/objects/environment/Barrière6_1x1.png"
+    },
+    {
+      "key": "barrière7",
+      "url": "./assets/objects/environment/Barrière7_1x1.png"
+    },
+    {
+      "key": "barrière8",
+      "url": "./assets/objects/environment/Barrière8_1x1.png"
+    },
+    {
+      "key": "barrière9",
+      "url": "./assets/objects/environment/Barrière9_1x1.png"
+    },
+    {
+      "key": "buisson1",
+      "url": "./assets/objects/environment/Buisson1_3x3.png"
+    },
+    {
+      "key": "buisson2",
+      "url": "./assets/objects/environment/Buisson2_2x2.png"
+    },
+    {
+      "key": "buisson3",
+      "url": "./assets/objects/environment/Buisson3_2x2.png"
+    },
+    {
+      "key": "buisson4",
+      "url": "./assets/objects/environment/Buisson4_2x2.png"
+    },
+    {
+      "key": "buisson5",
+      "url": "./assets/objects/environment/Buisson5_2x2.png"
+    },
+    {
+      "key": "buisson6",
+      "url": "./assets/objects/environment/Buisson6_1x1.png"
+    },
+    {
+      "key": "buisson7",
+      "url": "./assets/objects/environment/Buisson7_1x1.png"
+    },
+    {
+      "key": "buisson8",
+      "url": "./assets/objects/environment/Buisson8_1x1.png"
+    },
+    {
+      "key": "buisson9",
+      "url": "./assets/objects/environment/Buisson9_3x3.png"
+    },
+    {
+      "key": "bush1",
+      "url": "./assets/objects/environment/Bush1_3x3.png"
+    },
+    {
+      "key": "bush2",
+      "url": "./assets/objects/environment/Bush2_2x2.png"
+    },
+    {
+      "key": "cailloux10",
+      "url": "./assets/objects/environment/Cailloux10_1x1.png"
+    },
+    {
+      "key": "cailloux11",
+      "url": "./assets/objects/environment/Cailloux11_1x1.png"
+    },
+    {
+      "key": "cailloux12",
+      "url": "./assets/objects/environment/Cailloux12_2x2.png"
+    },
+    {
+      "key": "cailloux1",
+      "url": "./assets/objects/environment/Cailloux1_3x3.png"
+    },
+    {
+      "key": "cailloux2",
+      "url": "./assets/objects/environment/Cailloux2_2x2.png"
+    },
+    {
+      "key": "cailloux3",
+      "url": "./assets/objects/environment/Cailloux3_2x2.png"
+    },
+    {
+      "key": "cailloux4",
+      "url": "./assets/objects/environment/Cailloux4_2x2.png"
+    },
+    {
+      "key": "cailloux5",
+      "url": "./assets/objects/environment/Cailloux5_2x2.png"
+    },
+    {
+      "key": "cailloux6",
+      "url": "./assets/objects/environment/Cailloux6_2x2.png"
+    },
+    {
+      "key": "cailloux7",
+      "url": "./assets/objects/environment/Cailloux7_2x2.png"
+    },
+    {
+      "key": "cailloux8",
+      "url": "./assets/objects/environment/Cailloux8_2x2.png"
+    },
+    {
+      "key": "cailloux9",
+      "url": "./assets/objects/environment/Cailloux9_2x2.png"
+    },
+    {
+      "key": "caisse1",
+      "url": "./assets/objects/environment/Caisse1_1x1.png"
+    },
+    {
+      "key": "caisse2",
+      "url": "./assets/objects/environment/Caisse2_1x1.png"
+    },
+    {
+      "key": "champi1",
+      "url": "./assets/objects/environment/Champi1_2x2.png"
+    },
+    {
+      "key": "champi2",
+      "url": "./assets/objects/environment/Champi2_2x2.png"
+    },
+    {
+      "key": "champi3",
+      "url": "./assets/objects/environment/Champi3_2x2.png"
+    },
+    {
+      "key": "champi4",
+      "url": "./assets/objects/environment/Champi4_2x2.png"
+    },
+    {
+      "key": "champi5",
+      "url": "./assets/objects/environment/Champi5_2x3.png"
+    },
+    {
+      "key": "epouvantaille",
+      "url": "./assets/objects/environment/Epouvantaille_4x4.png"
+    },
+    {
+      "key": "fleur10",
+      "url": "./assets/objects/environment/Fleur10_1x1.png"
+    },
+    {
+      "key": "fleur11",
+      "url": "./assets/objects/environment/Fleur11_1x1.png"
+    },
+    {
+      "key": "fleur12",
+      "url": "./assets/objects/environment/Fleur12_1x1.png"
+    },
+    {
+      "key": "fleur13",
+      "url": "./assets/objects/environment/Fleur13_1x1.png"
+    },
+    {
+      "key": "fleur14",
+      "url": "./assets/objects/environment/Fleur14_1x1.png"
+    },
+    {
+      "key": "fleur15",
+      "url": "./assets/objects/environment/Fleur15_1x1.png"
+    },
+    {
+      "key": "fleur1",
+      "url": "./assets/objects/environment/Fleur1_1x2.png"
+    },
+    {
+      "key": "fleur2",
+      "url": "./assets/objects/environment/Fleur2_1x2.png"
+    },
+    {
+      "key": "fleur3",
+      "url": "./assets/objects/environment/Fleur3_1x1.png"
+    },
+    {
+      "key": "fleur4",
+      "url": "./assets/objects/environment/Fleur4_1x1.png"
+    },
+    {
+      "key": "fleur5",
+      "url": "./assets/objects/environment/Fleur5_1x1.png"
+    },
+    {
+      "key": "fleur6",
+      "url": "./assets/objects/environment/Fleur6_1x1.png"
+    },
+    {
+      "key": "fleur7",
+      "url": "./assets/objects/environment/Fleur7_1x1.png"
+    },
+    {
+      "key": "fleur8",
+      "url": "./assets/objects/environment/Fleur8_1x1.png"
+    },
+    {
+      "key": "fleur9",
+      "url": "./assets/objects/environment/Fleur9_1x1.png"
+    },
+    {
+      "key": "herbe1",
+      "url": "./assets/objects/environment/Herbe1_2x1.png"
+    },
+    {
+      "key": "herbe2",
+      "url": "./assets/objects/environment/Herbe2_1x1.png"
+    },
+    {
+      "key": "herbe3",
+      "url": "./assets/objects/environment/Herbe3_1x1.png"
+    },
+    {
+      "key": "herbe4",
+      "url": "./assets/objects/environment/Herbe4_1x1.png"
+    },
+    {
+      "key": "herbe5",
+      "url": "./assets/objects/environment/Herbe5_1x1.png"
+    },
+    {
+      "key": "herbe6",
+      "url": "./assets/objects/environment/Herbe6_1x1.png"
+    },
+    {
+      "key": "herbe7",
+      "url": "./assets/objects/environment/Herbe7_1x1.png"
+    },
+    {
+      "key": "maison1",
+      "url": "./assets/objects/environment/Maison1_10x8.png"
+    },
+    {
+      "key": "puit1",
+      "url": "./assets/objects/environment/Puit1_3x3.png"
+    },
+    {
+      "key": "puit2",
+      "url": "./assets/objects/environment/Puit2_3x3.png"
+    },
+    {
+      "key": "rocher10",
+      "url": "./assets/objects/environment/Rocher10_2x2.png"
+    },
+    {
+      "key": "rocher11",
+      "url": "./assets/objects/environment/Rocher11_2x2.png"
+    },
+    {
+      "key": "rocher12",
+      "url": "./assets/objects/environment/Rocher12_2x2.png"
+    },
+    {
+      "key": "rocher1",
+      "url": "./assets/objects/environment/Rocher1_4x4.png"
+    },
+    {
+      "key": "rocher2",
+      "url": "./assets/objects/environment/Rocher2_4x4.png"
+    },
+    {
+      "key": "rocher3",
+      "url": "./assets/objects/environment/Rocher3_3x3.png"
+    },
+    {
+      "key": "rocher4",
+      "url": "./assets/objects/environment/Rocher4_3x3.png"
+    },
+    {
+      "key": "rocher5",
+      "url": "./assets/objects/environment/Rocher5_3x3.png"
+    },
+    {
+      "key": "rocher6",
+      "url": "./assets/objects/environment/Rocher6_3x3.png"
+    },
+    {
+      "key": "rocher7",
+      "url": "./assets/objects/environment/Rocher7_2x3.png"
+    },
+    {
+      "key": "rocher8",
+      "url": "./assets/objects/environment/Rocher8_2x3.png"
+    },
+    {
+      "key": "rocher9",
+      "url": "./assets/objects/environment/Rocher9_2x2.png"
+    },
+    {
+      "key": "souche1",
+      "url": "./assets/objects/environment/Souche1_2x2.png"
+    },
+    {
+      "key": "souche2",
+      "url": "./assets/objects/environment/Souche2_2x2.png"
+    },
+    {
+      "key": "souche3",
+      "url": "./assets/objects/environment/Souche3_2x2.png"
+    },
+    {
+      "key": "souche3",
+      "url": "./assets/objects/environment/Souche3_3x3.png"
+    },
+    {
+      "key": "souche4",
+      "url": "./assets/objects/environment/Souche4_3x2.png"
+    },
+    {
+      "key": "tonneau1",
+      "url": "./assets/objects/environment/Tonneau1_2x2.png"
+    }
+  ]
+}
