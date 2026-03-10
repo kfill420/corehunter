@@ -52,6 +52,7 @@ export default class MainScene extends Phaser.Scene {
         loadHeroAnims('slide', 'sliding', 'Sliding', 5);
 
         loadWeaponAnims('baseball', 'attacking', 'Attacking', '0_Forest_Ranger_Baseball', 11);
+        loadWeaponAnims('baseball', 'idle', 'idle', '0_Forest_Ranger_Idle', 17);
     }
 
     create() {
@@ -127,7 +128,6 @@ export default class MainScene extends Phaser.Scene {
         // On passe map et non mapData à setupWorld
         this.sortingGroup = setupWorld(this, map); 
         this.sortingGroup.add(this.player.sprite);
-        this.sortingGroup.add(this.player.weaponSprite);
 
         // 6. CAMÉRA ET INPUTS
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);

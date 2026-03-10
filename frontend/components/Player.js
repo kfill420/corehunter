@@ -49,32 +49,37 @@ export default class Player {
         const anims = this.scene.anims;
 
         const createDoubleAnim = (key, length, rate, repeat = -1) => {
-    // 1. Anim du Héros (ne change pas)
-    if (!anims.exists(key)) {
-        anims.create({
-            key: key,
-            frames: Array.from({ length }, (_, i) => ({ key: `hero-${key}-${i}` })),
-            frameRate: rate,
-            repeat: repeat
-        });
-    }
+            // 1. Animation du Héros (toujours créée)
+            if (!anims.exists(key)) {
+                anims.create({
+                    key: key,
+                    frames: Array.from({ length }, (_, i) => ({ key: `hero-${key}-${i}` })),
+                    frameRate: rate,
+                    repeat: repeat
+                });
+            }
+        
+            // 2. Animation de l'Arme (Sécurisée)
+            if (this.currentWeapon && this.currentWeapon !== '') {
+                const weaponKey = `${this.currentWeapon}-${key}`;
 
-    // 2. Anim de l'Arme (On corrige le tir ici)
-            if (key === "attack") {
-                const weaponKey = `${this.currentWeapon}-attack`; // Nom de l'anim : baseball-attack
-                
-                // ATTENTION : On utilise "attacking" car c'est ce qui est défini dans MainScene
-                const textureKeyBase = `${this.currentWeapon}-attacking`; 
+                let textureSuffix = key;
+                if (key === "attack") textureSuffix = "attacking";
+                if (key === "walk") textureSuffix = "walking";
+                if (key === "run") textureSuffix = "running";
             
-                if (!anims.exists(weaponKey)) {
-                    anims.create({
-                        key: weaponKey,
-                        frames: Array.from({ length }, (_, i) => ({ 
-                            key: `${textureKeyBase}-${i}` // Va chercher baseball-attacking-0, 1, etc.
-                        })),
-                        frameRate: rate,
-                        repeat: repeat
-                    });
+                // VÉRIFICATION : Est-ce que la frame 0 de cette texture existe ?
+                if (this.scene.textures.exists(`${this.currentWeapon}-${textureSuffix}-0`)) {
+                    if (!anims.exists(weaponKey)) {
+                        anims.create({
+                            key: weaponKey,
+                            frames: Array.from({ length }, (_, i) => ({ 
+                                key: `${this.currentWeapon}-${textureSuffix}-${i}`
+                            })),
+                            frameRate: rate,
+                            repeat: repeat
+                        });
+                    }
                 }
             }
         };
@@ -87,6 +92,7 @@ export default class Player {
         createDoubleAnim("slide", 6, 20, 0);
 
         this.sprite.play("idle");
+        if (this.currentWeapon) this.playDualAnim("idle");
     }
 
     // Remplace tes fonctions par celles-ci
@@ -246,6 +252,12 @@ export default class Player {
         this.sprite.y = this.body.position.y;
         this.weaponSprite.x = this.sprite.x;
         this.weaponSprite.y = this.sprite.y;
+
+        this.weaponSprite.depth = this.sprite.depth - 0.1;
+
+        if (!this.isAttacking && this.currentWeapon === 'baseball') {
+            this.weaponSprite.y -= 6;
+        }
     }
 
     takeDamage(amount, source) {
@@ -297,19 +309,22 @@ export default class Player {
         this.scene.matter.world.remove(this.body); // Plus de mouvement physique
     }
 
-        playDualAnim(key) {
+    playDualAnim(key) {
+        // Joue l'anim du héros
         this.sprite.play(key, true);
         
-        // Si on attaque avec une arme équipée
-        if (key === "attack" && this.currentWeapon !== '') {
-            const weaponKey = `${this.currentWeapon}-attack`;
+        if (this.currentWeapon && this.currentWeapon !== '') {
+            const weaponKey = `${this.currentWeapon}-${key}`;
+            
+            // Si l'animation existe pour cette arme, on l'affiche et on la joue
             if (this.scene.anims.exists(weaponKey)) {
                 this.weaponSprite.setVisible(true);
                 this.weaponSprite.play(weaponKey, true);
+            } else {
+                // Si l'anim n'existe pas (ex: pas d'anim "kick" pour la batte), on cache
+                this.weaponSprite.setVisible(false);
             }
         } else {
-            // Si on ne fait pas l'anim "attack", ou si on n'a pas d'arme
-            // On cache le sprite de l'arme (évite d'avoir une batte qui suit le "walk")
             this.weaponSprite.setVisible(false);
         }
     }
@@ -346,17 +361,17 @@ export default class Player {
     }
 
     changeWeapon(weaponKey) {
-        this.currentWeapon = weaponKey;
-        
-        if (this.weaponSprite) {
-            // Si weaponKey est vide, on cache l'arme
-            if (!weaponKey || weaponKey === '') {
-                this.weaponSprite.setVisible(false);
-            } else {
-                this.weaponSprite.setVisible(true);
-                // On change la texture immédiatement pour éviter un sprite vide
-                this.weaponSprite.setTexture(`${weaponKey}-attacking-0`);
-            }
-        }
+       this.currentWeapon = weaponKey;
+       
+       if (this.weaponSprite) {
+           if (!weaponKey || weaponKey === '') {
+               this.weaponSprite.setVisible(false);
+           } else {
+               this.weaponSprite.setVisible(true);
+               // On récupère l'anim actuelle du perso pour l'appliquer à l'arme
+               const currentAnimKey = this.sprite.anims.currentAnim ? this.sprite.anims.currentAnim.key : "idle";
+               this.playDualAnim(currentAnimKey);
+           }
+       }
     }
 }
