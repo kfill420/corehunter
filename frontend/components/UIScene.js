@@ -1,6 +1,6 @@
 export default class UIScene extends Phaser.Scene {
     constructor() {
-        super({ key: 'UIScene', active: true });
+        super({ key: 'UIScene' });
         this.maxSlots = 3;
         this.selectedSlot = 0;
         this.inventory = ['baseball', '', '']; // Stocke les clés d'items
@@ -24,8 +24,14 @@ export default class UIScene extends Phaser.Scene {
         this.drawInventory();
 
         // Events
-        const mainScene = this.scene.get('MainScene');
-        mainScene.events.on('updateUI', (data) => { this.targetData = data; }, this);
+        const gameScene = this.scene.get('GameScene');
+        if (gameScene) {
+            gameScene.events.on('updateUI', (data) => { 
+                this.targetData = data; 
+            }, 
+            this);
+        }
+        
 
         // Changement de slot (Molette)
         this.input.on('wheel', (pointer, gameObjects, dx, dy) => {
@@ -36,7 +42,7 @@ export default class UIScene extends Phaser.Scene {
             }
             this.drawInventory();
             // On informe le joueur du changement d'arme
-            mainScene.player.changeWeapon(this.inventory[this.selectedSlot]);
+            gameScene.player.changeWeapon(this.inventory[this.selectedSlot]);
         });
     }
 
@@ -125,8 +131,8 @@ export default class UIScene extends Phaser.Scene {
            // 2. Si l'objet est ramassé dans le slot actuellement sélectionné, 
            // on équipe le joueur immédiatement
            if (emptySlot === this.selectedSlot) {
-               const mainScene = this.scene.get('MainScene');
-               mainScene.player.changeWeapon(weaponKey);
+               const gameScene = this.scene.get('GameScene');
+               gameScene.player.changeWeapon(weaponKey);
            }
            return true; // Succès
        }

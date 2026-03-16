@@ -2,8 +2,14 @@ import Player from '../components/Player.js';
 import Slime from '../components/Slime.js'
 import { setupWorld, applyYSorting } from '../components/WorldUtils.js';
 
-export default class MainScene extends Phaser.Scene {
-    constructor() { super("MainScene"); }
+export default class GameScene extends Phaser.Scene {
+    constructor() { super("GameScene"); }
+
+    init(data) {
+    // Si data.mode n'existe pas, on met 'solo' par défaut
+    this.gameMode = data.mode || 'solo';
+    console.log("Démarrage du jeu en mode :", this.gameMode);
+}
 
     preload() {
         this.load.tilemapTiledJSON("map", "./assets/map2.tmj");
@@ -39,7 +45,6 @@ export default class MainScene extends Phaser.Scene {
         const loadWeaponAnims = (weaponName, key, folder, prefix, count) => {
             for (let i = 0; i <= count; i++) {
                 const num = i.toString().padStart(3, "0");
-                // ATTENTION : Vérifie bien le chemin vers tes images de baseball !
                 this.load.image(`${weaponName}-${key}-${i}`, `./assets/weapons/${weaponName}/${folder}/${prefix}_${num}.png`);
             }
         };
