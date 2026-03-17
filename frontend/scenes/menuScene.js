@@ -12,6 +12,9 @@ export default class MenuScene extends Phaser.Scene {
     create() {
         const { width, height } = this.scale;
 
+        // On vérifie si l'user est desktop
+        const isMobile = !this.sys.game.device.os.desktop;
+
         // Dans MenuScene.js ou BootScene.js
         const savedVolume = localStorage.getItem('game_volume');
         if (savedVolume !== null) {
@@ -50,6 +53,14 @@ export default class MenuScene extends Phaser.Scene {
             frequency: 150,
             blendMode: 'ADD'
         });
+        
+        // Si on est sur mobile, on affiche le message et on arrête là
+        if (isMobile) {
+            this.showMobileWarning(width, height);
+            return; // Empêche la création du titre et des boutons cliquables
+        }
+
+        
 
         // --- 3. TITRE ET BOUTONS ---
         this.add.text(width / 2, height * 0.2, 'MY STREAMER NEEDS HELP', {
@@ -133,7 +144,43 @@ export default class MenuScene extends Phaser.Scene {
     } else {
         container.setAlpha(0.6);
     }
-
     return container;
+    }
+
+    showMobileWarning(width, height) {
+        // 1. Fond noir total pour bien masquer le menu
+        const overlay = this.add.graphics();
+        overlay.fillStyle(0x050505, 0.7);
+        overlay.fillRect(0, 0, width, height);
+        
+        // 2. Calcul d'une taille adaptative (fontSize basée sur la largeur)
+        // On utilise Math.min pour que le texte ne devienne pas géant sur tablette
+        const titleSize = Math.min(width * 0.1, 70); 
+        const descSize = Math.min(width * 0.05, 64);
+        
+        // 3. Texte d'erreur principal (TITRE)
+        const errorTitle = this.add.text(width / 2, height * 0.4, "ACCÈS REFUSÉ", {
+            fontSize: `${titleSize}px`,
+            fontFamily: 'Arial Black',
+            fill: '#ff0000',
+            stroke: '#000000',
+            strokeThickness: 6
+        }).setOrigin(0.5);
+    
+        // 4. Texte descriptif (plus gros et avec des retours à la ligne forcés)
+        const errorDesc = this.add.text(width / 2, height * 0.6, 
+            "CE JEU NÉCESSITE\nUN CLAVIER ET UNE SOURIS.\n\nDISPONIBLE UNIQUEMENT\nSUR ORDINATEUR.", {
+            fontSize: `${descSize}px`,
+            fontFamily: 'Arial',
+            fill: '#ffffff',
+            align: 'center',
+            lineSpacing: 10,
+            wordWrap: { width: width * 0.8 } // Empêche le texte de sortir de l'écran
+        }).setOrigin(0.5);
+    
+        // 5. Petit effet visuel : l'icône "Attention" ou une bordure
+        const border = this.add.graphics();
+        border.lineStyle(6, 0xff0000, 0.5);
+        border.strokeRect(20, 20, width - 40, height - 40);
     }
 }
