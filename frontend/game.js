@@ -1,7 +1,8 @@
 import MenuScene from "./scenes/menuScene.js";
-import UIScene from "./components/UIScene.js";
 import GameScene from "./scenes/gameScene.js";
+import PreloadScene from "./scenes/preloadScene.js";
 import SettingsScene from "./scenes/settingsScene.js";
+import UIScene from "./components/UIScene.js";
 
 const socket = io("http://localhost:3001");
 
@@ -33,7 +34,7 @@ const config = {
     antialias: false,
     roundPixels: true
   },
-  scene: [MenuScene, GameScene, UIScene, SettingsScene]
+  scene: [MenuScene, PreloadScene, GameScene, UIScene, SettingsScene]
 };
 
 new Phaser.Game(config);
