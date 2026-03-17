@@ -27,6 +27,7 @@ export default class Player {
         this.currentWeapon = 'baseball';
         this.weaponSprite = null;
         this.activeHitbox = null;
+        this.isDead = false;
 
         this.hp = 10;
         this.maxhp = 10;
@@ -326,12 +327,33 @@ export default class Player {
     }
 
     die() {
+        if (this.isDead) return;
+        this.isDead = true;
+
         this.scene.sound.play('death-player', { volume: 0.5 });
-        console.log("Le joueur est mort !");
-        // Tu peux ici stopper la scène, jouer une animation de mort 
-        // ou afficher un écran de Game Over
-        this.sprite.setTint(0x333333); // Devient gris
-        this.scene.matter.world.remove(this.body); // Plus de mouvement physique
+        this.weaponSprite.setVisible(false);
+        this.sprite.setTint(0x333333); // Corps au sol devient gris
+        this.sprite.setAngle(90);      // Tombe au sol
+
+        // Création du "fantôme"
+        const ghost = this.scene.add.sprite(this.sprite.x, this.sprite.y, this.sprite.texture.key);
+        ghost.setScale(this.sprite.scaleX).setAlpha(0.5).setTint(0xffffff);
+
+        this.scene.tweens.add({
+            targets: ghost,
+            y: ghost.y - 150, // S'envole vers le haut
+            alpha: 0,         // Disparaît
+            scale: ghost.scaleX * 1.5, // Grandit un peu
+            duration: 3500,
+            ease: 'Linear',
+            onComplete: () => {
+                ghost.destroy();
+                this.scene.scene.launch('DeathScene', { origin: this.scene.scene.key });
+                this.scene.scene.pause();
+            }
+        });
+
+        this.scene.matter.world.remove(this.body);
     }
 
     playDualAnim(key) {

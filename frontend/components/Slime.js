@@ -274,7 +274,7 @@ export default class Slime {
         const attackConfig = {
             1: { impactFrame: 6, soundKey: 'slime-splash', volume: 0.4 },
             2: { impactFrame: 7, soundKey: 'metal-bite', volume: 0.2 },
-            3: { impactFrame: 4, soundKey: 'ground-explosion', volume: 0.5 }
+            3: { impactFrame: 4, soundKey: 'ground-explosion', volume: 0.4 }
         };
         const config = attackConfig[this.type] || attackConfig[1];
 
