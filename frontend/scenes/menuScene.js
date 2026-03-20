@@ -66,7 +66,7 @@ export default class MenuScene extends Phaser.Scene {
 
     _createUI(width, height) {
         // Titre
-        this.titleText = this.add.text(width / 2, height * 0.2, 'MY STREAMER NEEDS HELP', {
+        this.titleText = this.add.text(width / 2, height * 0.2, 'CORE HUNTER', {
             fontSize: '42px',
             fontFamily: 'Arial Black',
             fill: '#ffffff',
