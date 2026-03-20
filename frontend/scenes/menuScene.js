@@ -75,7 +75,7 @@ export default class MenuScene extends Phaser.Scene {
             this.scene.start('PreloadScene', { mode: 'solo' });
         });
 
-        this.createButton(width / 2, height * 0.62, 'MODE STREAMER (BIENTÔT)', true, () => {
+        this.createButton(width / 2, height * 0.62, 'MODE MULTIPLAYER (SOON)', true, () => {
             this.cameras.main.shake(200, 0.005);
         });
 
