@@ -293,6 +293,13 @@ export default class Player {
         if (this.isDead) return;
         this.isDead = true;
 
+        if (this.body) {
+            this.body.collisionFilter.category = 0;
+            this.body.collisionFilter.mask = 0;
+            // On arrête tout mouvement résiduel
+            this.scene.matter.body.setVelocity(this.body, { x: 0, y: 0 });
+        }
+
         this.scene.sound.play('death-player', { volume: 0.5 });
         this.weaponSprite.setVisible(false);
         this.sprite.setTint(0x333333);
@@ -311,12 +318,14 @@ export default class Player {
             ease: 'Linear',
             onComplete: () => {
                 ghost.destroy();
+                if (this.body) {
+                    this.scene.matter.world.remove(this.body);
+                    this.body = null; 
+                }
                 this.scene.scene.launch('DeathScene', { origin: this.scene.scene.key });
                 this.scene.scene.pause();
             }
         });
-
-        this.scene.matter.world.remove(this.body);
     }
 
     playDualAnim(key) {

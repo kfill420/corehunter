@@ -2,7 +2,7 @@ import MenuScene from "./scenes/menuScene.js";
 import GameScene from "./scenes/gameScene.js";
 import PreloadScene from "./scenes/preloadScene.js";
 import SettingsScene from "./scenes/settingsScene.js";
-import UIScene from "./components/UIScene.js";
+import UIScene from "./scenes/UIScene.js";
 import DeathScene from "./scenes/deathScene.js";
 
 const socket = io("http://localhost:3001");

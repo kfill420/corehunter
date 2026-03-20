@@ -93,7 +93,15 @@ export default class Slime {
     }
 
     update(playerSprite, staticBodies) {
-        if (this.isDead || this.isHurt || this.isAttacking) return;
+        if (this.isDead || (this.scene.player && this.scene.player.isDead)) {
+            this.sprite.setVelocity(0, 0);
+            if (!this.isDead) {
+                this.sprite.play(`slime${this.type}-idle-down`, true);
+            }
+            return;
+        }
+
+        if (this.isHurt || this.isAttacking) return;
 
         const distanceToPlayer = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, playerSprite.x, playerSprite.y);
         const time = this.scene.time.now;
