@@ -94,7 +94,7 @@ export default class PreloadScene extends Phaser.Scene {
         loadHeroAnims('attack', 'attacking', 'Attacking', 11);
         loadHeroAnims('slide', 'sliding', 'Sliding', 5);
 
-        loadWeaponAnims('baseball', 'attacking', 'Attacking', '0_Forest_Ranger_Baseball', 11);
+        loadWeaponAnims('baseball', 'attacking', 'attacking', '0_Forest_Ranger_Baseball', 11);
         loadWeaponAnims('baseball', 'idle', 'idle', '0_Forest_Ranger_Idle', 17);
     }
 
