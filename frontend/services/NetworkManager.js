@@ -39,11 +39,18 @@ class NetworkManager {
             const scene = gameInstance.scene.getScene('GameScene');
             if (scene && scene.sys.isActive()) scene.removeRemotePlayer(playerId);
         });
+        
     }
 
     sendAction(movementData) {
         if (this.socket && this.socket.connected) {
             this.socket.emit("playerMovement", movementData);
+        }
+    }
+
+    requestCurrentPlayers() {
+        if (this.socket && this.socket.connected) {
+            this.socket.emit("requestPlayers"); 
         }
     }
 }

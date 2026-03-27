@@ -46,6 +46,7 @@ export default class GameScene extends Phaser.Scene {
                 this.spawnRemotePlayers(networkManager.pendingPlayers);
                 networkManager.pendingPlayers = null; // On vide la file
             }
+            networkManager.requestCurrentPlayers();
         }
     }
 

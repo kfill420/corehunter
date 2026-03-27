@@ -61,6 +61,12 @@ function initSocket(server) {
       // Informer les autres pour qu'ils suppriment le sprite
       io.emit("userDisconnected", socket.id);
     });
+
+    // 7. Demande la liste des joueurs
+    socket.on("requestPlayers", () => {
+        // On renvoie la liste complète à celui qui demande
+        socket.emit("currentPlayers", players);
+    });
   });
 }
 
