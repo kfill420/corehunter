@@ -12,7 +12,7 @@ import UIScene from "./scenes/UIScene.js";
 import DeathScene from "./scenes/deathScene.js";
 import { networkManager } from "./services/NetworkManager.js";
 
-let webSocketEnable = false;
+let webSocketEnable = true;
 
 // Configuration du jeu
 const config = {

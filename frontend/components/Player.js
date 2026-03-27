@@ -1,4 +1,5 @@
 import WEAPON_CONFIG from './WeaponConfig.js';
+import { networkManager } from '../services/NetworkManager.js';
 
 /**
  * @class Player
@@ -213,6 +214,26 @@ export default class Player {
         if (!this.isAttacking && this.currentWeapon === 'baseball') {
             this.weaponSprite.y -= 6;
         }
+
+        // --- À AJOUTER À LA FIN DU UPDATE ---
+        if (this.scene.gameMode === 'multi' && !this.isDead) {
+            const currentData = {
+                x: Math.round(this.sprite.x),
+                y: Math.round(this.sprite.y),
+                anim: this.sprite.anims.currentAnim?.key,
+                flipX: this.sprite.flipX,
+                weapon: this.currentWeapon
+            };
+        
+            // On n'envoie que si quelque chose a changé (position ou animation)
+            if (this.lastSentData?.x !== currentData.x || 
+                this.lastSentData?.y !== currentData.y || 
+                this.lastSentData?.anim !== currentData.anim) {
+                
+                networkManager.sendAction('playerMovement', currentData);
+                this.lastSentData = currentData;
+            }
+        }
     }
 
     //Attaque avec l'arme actuelle vers la souris
@@ -229,6 +250,14 @@ export default class Player {
         this.weaponSprite.setVisible(true);
         this.scene.sound.play('punch', { volume: 0.4, detune: Phaser.Math.Between(-200, 200) });
         this.playDualAnim("attack");
+
+        if (this.scene.gameMode === 'multi') {
+            networkManager.sendAction('playerAttack', {
+                type: 'weapon',
+                weapon: this.currentWeapon,
+                angle: Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, pointer.worldX, pointer.worldY)
+            });
+        }
 
         // Calcul de la position de la Hitbox
         const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, pointer.worldX, pointer.worldY);
@@ -268,6 +297,13 @@ export default class Player {
         this.stamina -= this.staminaKickCost;
         this.scene.sound.play('punch', { volume: 0.3, detune: Phaser.Math.Between(-200, 200) });
         this.playDualAnim("kick");
+
+        if (this.scene.gameMode === 'multi') {
+            networkManager.sendAction('playerAttack', {
+                type: 'kick',
+                angle: Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, pointer.worldX, pointer.worldY)
+            });
+        }
 
         // Calcul de la position de la Hitbox
         const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, pointer.worldX, pointer.worldY);

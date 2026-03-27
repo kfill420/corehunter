@@ -7,39 +7,43 @@
 class NetworkManager {
     constructor() {
         this.socket = null;
-        this.url = "http://localhost:3001";
+        this.url = "http://localhost:3000";
+        this.pendingPlayers = null; // Stockage temporaire
     }
 
     init(gameInstance) {
+        if (this.socket) return; // Évite les doubles connexions
+        
         this.socket = io(this.url);
 
-        this.socket.on("connect", () => {
-            console.log(`[Network] Connected to ${this.url}`);
+        this.socket.on("currentPlayers", (players) => {
+            const scene = gameInstance.scene.getScene('GameScene');
+            if (scene && scene.sys.isActive()) {
+                scene.spawnRemotePlayers(players);
+            } else {
+                this.pendingPlayers = players; // On stocke pour plus tard
+            }
         });
 
-        this.socket.on("user-action", (data) => {
-            this.handleUserAction(gameInstance, data);
+        this.socket.on("newPlayer", (playerInfo) => {
+            const scene = gameInstance.scene.getScene('GameScene');
+            if (scene && scene.sys.isActive()) scene.addRemotePlayer(playerInfo);
         });
 
-        this.socket.on("connect_error", (err) => {
-            console.error("[Network] Connection failed:", err.message);
+        this.socket.on("playerMoved", (playerInfo) => {
+            const scene = gameInstance.scene.getScene('GameScene');
+            if (scene && scene.sys.isActive()) scene.updateRemotePlayer(playerInfo);
+        });
+
+        this.socket.on("userDisconnected", (playerId) => {
+            const scene = gameInstance.scene.getScene('GameScene');
+            if (scene && scene.sys.isActive()) scene.removeRemotePlayer(playerId);
         });
     }
 
-    handleUserAction(game, data) {
-        console.log("[Network] Action received:", data);
-        
-        const gameScene = game.scene.getScene('GameScene');
-        
-        if (gameScene && game.scene.isActive('GameScene')) {
-            gameScene.handleAction(data.action);
-        }
-    }
-
-    //Méthode pour envoyer des données au serveur
-    sendAction(actionType, payload) {
-        if (this.socket) {
-            this.socket.emit("player-action", { type: actionType, ...payload });
+    sendAction(movementData) {
+        if (this.socket && this.socket.connected) {
+            this.socket.emit("playerMovement", movementData);
         }
     }
 }

@@ -74,12 +74,13 @@ export default class MenuScene extends Phaser.Scene {
             strokeThickness: 8
         }).setOrigin(0.5);
 
-        this.btnSolo = new MenuButton(this, width / 2, height * 0.5, 'MODE SOLO', false, () => {
+        this.btnSolo = new MenuButton(this, width / 2, height * 0.5, 'SOLOPLAYER', false, () => {
             this.scene.start('PreloadScene', { mode: 'solo' });
         });
 
-        this.btnMulti = new MenuButton(this, width / 2, height * 0.62, 'MULTIPLAYER (SOON)', true, () => {
-            this.cameras.main.shake(200, 0.005);
+        this.btnMulti = new MenuButton(this, width / 2, height * 0.62, 'MULTIPLAYER', false, () => {
+            // this.cameras.main.shake(200, 0.005);
+            this.scene.start('PreloadScene', { mode: 'multi' });
         });
 
         this.btnSettings = new MenuButton(this, width / 2, height * 0.74, 'RÉGLAGES', false, () => {

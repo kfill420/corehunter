@@ -4,10 +4,8 @@ dotenv.config();
 
 const path = require('path');
 const fastifyStatic = require('@fastify/static');
-const http = require('http');
 const cors = require('@fastify/cors');
 
-const { initSocket } = require('./utils/socketManager');
 const { port } = require('./config');
 const routes = require('./routes');
 
@@ -44,18 +42,16 @@ fastify.register(routes);
 
 async function start() {
   try {
-    const server = http.createServer();
-
     await fastify.ready();
 
-    fastify.listen({ server, port });
+    // Fastify peut écouter sur le port directement
+    // Pas besoin de créer http.createServer() manuellement ici si on utilise fastify.server
+    await fastify.listen({ port: port, host: '0.0.0.0' });
 
-    initSocket(server);
+    // On initialise le socket sur le serveur HTTP interne de Fastify
+    socketManager.initSocket(fastify.server);
 
-    server.listen(port, () => {
-      fastify.log.info(`Backend API: http://localhost:${port}`);
-    });
-
+    fastify.log.info(`Serveur lancé sur le port ${port}`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
