@@ -8,7 +8,7 @@ class NetworkManager {
     constructor() {
         this.socket = null;
         this.url = "http://localhost:3000";
-        this.pendingPlayers = null; // Stockage temporaire
+        this.pendingPlayers = null;
     }
 
     init(gameInstance) {

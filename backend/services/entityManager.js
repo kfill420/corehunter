@@ -90,9 +90,20 @@ class EntityManager {
 
             if (slime.state === "CHASE" && closestPlayer) {
                 currentSpeed = slime.stats.chaseSpeed;
-                const angle = Math.atan2(closestPlayer.y - slime.y, closestPlayer.x - slime.x);
-                moveVec.x = Math.cos(angle);
-                moveVec.y = Math.sin(angle);
+                const dist = Math.hypot(closestPlayer.x - slime.x, closestPlayer.y - slime.y);
+
+                const stopDist = 10;
+                const resumeDist = 15;
+
+                if (dist > (slime.isMoving ? stopDist : resumeDist)) {
+                    const angle = Math.atan2(closestPlayer.y - slime.y, closestPlayer.x - slime.x);
+                    moveVec.x = Math.cos(angle);
+                    moveVec.y = Math.sin(angle);
+                } else {
+                    moveVec.x = 0;
+                    moveVec.y = 0;
+                }
+                
             } else {
                 // WANDER
                 if (now > slime.nextDecisionTime) {
@@ -110,6 +121,7 @@ class EntityManager {
             // 4. Application du mouvement (vitesse * delta)
             slime.x += moveVec.x * currentSpeed * delta;
             slime.y += moveVec.y * currentSpeed * delta;
+            slime.isMoving = (moveVec.x !== 0 || moveVec.y !== 0);
         });
 
         // Envoi groupé des positions

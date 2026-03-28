@@ -52,6 +52,9 @@ export default class Slime {
 
         this.targetX = x;
         this.targetY = y;
+
+        this.idleTimer = 0;
+        this.lastDirChangeTime = 0;
     }
 
     // Crée les animations directionnelles basées sur les spritesheets 
@@ -59,6 +62,13 @@ export default class Slime {
         const anims = this.scene.anims;
         const t = this.type;
         const directions = ['down', 'up', 'left', 'right'];
+
+        const configAttack = {
+            1: 10,
+            2: 11,
+            3: 9 
+        };
+        const attackFramesCount = configAttack[t] || 10;
         
         directions.forEach((dir, rowIndex) => {
             // IDLE
@@ -83,7 +93,7 @@ export default class Slime {
             if (!anims.exists(`slime${t}-attack-${dir}`)) {
                 anims.create({
                     key: `slime${t}-attack-${dir}`,
-                    frames: anims.generateFrameNumbers(`slime${t}-attack`, { start: rowIndex * 10, end: (rowIndex * 10) + 9 }),
+                    frames: anims.generateFrameNumbers(`slime${t}-attack`, { start: rowIndex * attackFramesCount, end: (rowIndex * attackFramesCount) + (attackFramesCount - 1) }),
                     frameRate: 12,
                     repeat: 0
                 });
@@ -105,52 +115,79 @@ export default class Slime {
     update() {
         if (this.isDead || !this.sprite || !this.sprite.body) return;
 
-        // LERP : On déplace le sprite de 20% de la distance restante à chaque frame
-        // Cela crée un mouvement fluide même si le serveur n'envoie que 30 positions/sec
-        const lerpFactor = 0.15; 
+        const lerpFactor = 0.01;
         this.sprite.x = Phaser.Math.Linear(this.sprite.x, this.targetX, lerpFactor);
         this.sprite.y = Phaser.Math.Linear(this.sprite.y, this.targetY, lerpFactor);
     }
 
     syncFromServer(serverData) {
-        if (this.isDead || serverData.dead) {
-            if (!this.isDead) this.die();
-            return;
-        }
-
-        if (this.isAttacking || this.isHurt) {
-            this.targetX = serverData.x;
-            this.targetY = serverData.y;
-            return;
-        };
-
-        // Calculer la direction pour l'anim en comparant l'ancienne position et la nouvelle
-        this.targetX = serverData.x;
-        this.targetY = serverData.y;
-
-        const dx = serverData.x - this.sprite.x;
-        const dy = serverData.y - this.sprite.y;
-        
-        if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
-            this.updateDirectionalAnim({x: dx, y: dy}, 'run');
-            this.handleMoveSounds();
-        } else {
-            this.sprite.play(`slime${this.type}-idle-${this.lastDir}`, true);
-        }
+    if (this.isDead || serverData.dead) {
+        if (!this.isDead) this.die();
+        return;
     }
 
-    // Détermine quelle animation jouer (up, down, left, right) selon le vecteur
+    const dx = serverData.x - this.sprite.x;
+    const dy = serverData.y - this.sprite.y;
+
+    this.targetX = serverData.x;
+    this.targetY = serverData.y;
+
+    if (this.isAttacking || this.isHurt) return;
+    
+    if (serverData.isMoving) {
+        this.idleTimer = 0;
+        // On envoie le vecteur de direction globale
+        this.updateDirectionalAnim({ x: dx, y: dy }, 'run');
+        this.handleMoveSounds();
+    } else {
+        this.idleTimer++;
+        if (this.idleTimer > 10) { 
+            this.updateDirectionalAnim(null, 'idle');
+        }
+    }
+}
+
     updateDirectionalAnim(vec, type) {
-        const angle = Phaser.Math.RadToDeg(Math.atan2(vec.y, vec.x));
-        let dir = 'down';
+        if (this.isAttacking && type !== 'attack') return;
 
-        if (angle >= -135 && angle <= -45) dir = 'up';
-        else if (angle > -45 && angle < 45) dir = 'right';
-        else if (angle >= 45 && angle <= 135) dir = 'down';
-        else dir = 'left';
+        let dir = this.lastDir;
 
-        this.lastDir = dir;
-        this.sprite.play(`slime${this.type}-${type}-${dir}`, true);
+        // 1. DETERMINER LA DIRECTION SOUHAITÉE
+        if (vec && (Math.abs(vec.x) > 0.1 || Math.abs(vec.y) > 0.1)) {
+            const angle = Phaser.Math.RadToDeg(Math.atan2(vec.y, vec.x));
+
+            // On utilise des seuils fixes pour la clarté
+            if (angle >= -135 && angle <= -45) dir = 'up';
+            else if (angle > -45 && angle < 45) dir = 'right';
+            else if (angle >= 45 && angle <= 135) dir = 'down';
+            else dir = 'left';
+        }
+
+        const animKey = `slime${this.type}-${type}-${dir}`;
+        const currentAnim = this.sprite.anims.currentAnim;
+
+        // 2. CONDITION DE CHANGEMENT (L'OBLIGATION D'ATTENTE)
+        // On ne change l'animation QUE SI :
+        // - On n'a pas d'animation en cours
+        // - OU l'animation demandée est différente de l'actuelle ET on a dépassé 50% de la progression
+
+        let canChange = false;
+        if (!currentAnim || this.sprite.anims.getName() !== animKey) {
+            if (!currentAnim) {
+                canChange = true;
+            } else {
+                // On force l'attente d'au moins la moitié de l'animation de course (0.5 = 50%)
+                // Cela évite que le sprite change de sens frénétiquement
+                if (this.sprite.anims.getProgress() >= 0.5) {
+                    canChange = true;
+                }
+            }
+        }
+
+        if (canChange) {
+            this.sprite.play(animKey, true);
+            this.lastDir = dir;
+        }
     }
 
     handleMoveSounds() {
@@ -170,55 +207,59 @@ export default class Slime {
     }
 
     attack(targetId) {
-        if (this.isAttacking || this.isDead) return;
-        this.isAttacking = true;
+    if (this.isAttacking || this.isDead) return;
 
-        const isMe = (networkManager.socket.id === targetId);
-        let targetSprite = isMe ? this.scene.player.sprite : this.scene.otherPlayers.get(targetId);
-        
-        if (!targetSprite || !targetSprite.active) {
-            this.isAttacking = false;
-            return;
-        }
+    const isMe = (networkManager.socket.id === targetId);
+    let targetSprite = isMe ? this.scene.player.sprite : this.scene.otherPlayers.get(targetId);
+    
+    if (!targetSprite || !targetSprite.active) return;
 
-        const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, targetSprite.x, targetSprite.y);
-        this.updateDirectionalAnim(new Phaser.Math.Vector2(Math.cos(angle), Math.sin(angle)), 'attack');
+    // 1. On verrouille l'état tout de suite
+    this.isAttacking = true;
 
-        const attackFrames = { 1: 6, 2: 7, 3: 4 };
-        const impactFrame = attackFrames[this.type] || 5;
-        let damageDealt = false;
+    // 2. On calcule la direction vers la cible pour choisir la bonne animation
+    const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, targetSprite.x, targetSprite.y);
+    const deg = Phaser.Math.RadToDeg(angle);
+    let dir = 'down';
+    if (deg >= -135 && deg <= -45) dir = 'up';
+    else if (deg > -45 && deg < 45) dir = 'right';
+    else if (deg >= 45 && deg <= 135) dir = 'down';
+    else dir = 'left';
 
-        const onUpdate = (anim, frame) => {
-            if (frame.index === impactFrame) {
-                damageDealt = true;
-                const sound = this.type === 3 ? 'ground-explosion' : this.type === 2 ? 'metal-bite' : 'slime-splash';
+    this.lastDir = dir;
 
-                const spatial = this.getSpatialConfig(); 
-                this.scene.sound.play(sound, { 
-                    volume: 0.2 * spatial.volumeMod, 
-                    pan: spatial.pan,
-                    detune: Phaser.Math.Between(-200, 200)
-                });
+    // 3. On lance l'animation d'attaque (le "true" force le redémarrage)
+    this.sprite.play(`slime${this.type}-attack-${dir}`, true);
 
-                if (isMe) {
-                    const dist = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, targetSprite.x, targetSprite.y);
-                    const impactBuffer = 15;
-                    if (dist < this.attackRange + impactBuffer) { 
-                        this.scene.player.takeDamage(this.damage || 1, this.sprite);
-                    }
-                } else {
-                    targetSprite = this.scene.otherPlayers.get(targetId);
+    // 4. Gestion de l'impact (dégâts/sons)
+    const attackFrames = { 1: 6, 2: 7, 3: 4 };
+    const impactFrame = attackFrames[this.type] || 5;
+
+    const onUpdate = (anim, frame) => {
+        if (frame.index === impactFrame) {
+            const sound = this.type === 3 ? 'ground-explosion' : this.type === 2 ? 'metal-bite' : 'slime-splash';
+            const spatial = this.getSpatialConfig(); 
+            this.scene.sound.play(sound, { volume: 0.2 * spatial.volumeMod, pan: spatial.pan });
+
+            if (isMe) {
+                const dist = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, targetSprite.x, targetSprite.y);
+                if (dist < this.attackRange + 15) { 
+                    this.scene.player.takeDamage(this.damage || 1, this.sprite);
                 }
-
-                this.sprite.off('animationupdate', onUpdate);
             }
-        };
+            this.sprite.off('animationupdate', onUpdate);
+        }
+    };
 
-        this.sprite.on('animationupdate', onUpdate);
-        this.sprite.once('animationcomplete', () => {
+    this.sprite.on('animationupdate', onUpdate);
+
+    // 5. IMPORTANT : On ne libère isAttacking que quand l'animation est TOTALEMENT terminée
+    this.sprite.once('animationcomplete', (anim) => {
+        if (anim.key.includes('attack')) {
             this.isAttacking = false;
-        });
-    }
+        }
+    });
+}
 
     takeDamage(amount) {
         if (this.isHurt || this.isDead) return;
