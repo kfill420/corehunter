@@ -1,0 +1,36 @@
+name: Deploy Backend to Oracle VPS
+
+on:
+  push:
+    branches:
+      - main  # Déclenche le déploiement quand tu pushes sur main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            # On va dans le dossier du projet
+            cd /home/${{ secrets.SSH_USER }}/corehunter
+            
+            # On récupère les dernières modifs
+            git pull origin main
+            
+            # On installe les dépendances
+            npm install
+            
+            # On relance le serveur avec PM2
+            pm2 restart corehunter-back || pm2 start index.js --name "corehunter-back"
+            
+            # On sauvegarde la config PM2 pour le reboot du VPS
+            pm2 save

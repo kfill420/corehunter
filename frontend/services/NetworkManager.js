@@ -7,7 +7,8 @@
 class NetworkManager {
     constructor() {
         this.socket = null;
-        this.url = "http://localhost:3000";
+        const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+        this.url = isLocal ? "http://localhost:3000" : "https://corehunter.alexis-vignot.fr";
         this.pendingPlayers = null;
     }
 
