@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # 4. On installe les dépendances
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # 5. On copie tout le reste du code (y compris server.js)
 COPY . .
