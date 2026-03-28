@@ -75,7 +75,6 @@ export default class GameScene extends Phaser.Scene {
         if (this.sortingGroup) applyYSorting(this.sortingGroup, this.player.sprite);
     }
 
-
     _setupMap() {
         const tilemapCache = this.cache.tilemap.get("map");
         if (tilemapCache) {
@@ -199,7 +198,7 @@ export default class GameScene extends Phaser.Scene {
                 // Mais on ne l'update plus
                 return enemy.sprite && enemy.sprite.active;
             }
-            
+
             if (enemy.sprite?.active) {
                 enemy.update();
                 return true;
