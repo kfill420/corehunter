@@ -8,8 +8,9 @@ const players = {};
 function initSocket(server) {
   io = new Server(server, {
     cors: {
-      origin: ["https://corehunter.vercel.app", "http://localhost:3000"],
-      methods: ["GET", "POST"]
+      origin: ["https://corehunter.vercel.app", "https://corehunter.vercel.app/", "http://localhost:3000"],
+      methods: ["GET", "POST"],
+      credentials: true
     }
   });
 
