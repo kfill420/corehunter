@@ -35,7 +35,7 @@ async function start() {
 
     socketManager.initSocket(fastify.server);
 
-    await fastify.listen({ port: port, host: '127.0.0.1' });
+    await fastify.listen({ port: port, host: '0.0.0.0' });
 
     fastify.log.info(`Serveur lancé sur le port ${port}`);
   } catch (err) {
