@@ -385,7 +385,7 @@ export default class Player {
                 anim: 'idle', // ou une anim de mort
                 flipX: this.sprite.flipX,
                 weapon: this.currentWeapon,
-                isDead: true // On force le true ici
+                isDead: true
             });
         }
 

@@ -291,6 +291,11 @@ export default class GameScene extends Phaser.Scene {
         remote.setFixedRotation();
         remote.setStatic(true); 
         remote.playerId = info.playerId;
+
+        if (info.isDead) {
+            remote.setAngle(90);
+            remote.setTint(0x333333);
+        }
         
         if (this.sortingGroup) this.sortingGroup.add(remote);
         this.otherPlayers.set(info.playerId, remote);
@@ -301,8 +306,16 @@ export default class GameScene extends Phaser.Scene {
         const remote = this.otherPlayers.get(playerInfo.playerId);
         if (remote) {
             remote.setPosition(playerInfo.x, playerInfo.y);
-            if (playerInfo.anim) {
-                remote.play(playerInfo.anim, true);
+            if (playerInfo.isDead) {
+                remote.setAngle(90);
+                remote.setTint(0x333333);
+                remote.anims.stop();
+            } else {
+                remote.setAngle(0);
+                remote.setTint();
+                if (playerInfo.anim) {
+                    remote.play(playerInfo.anim, true);
+                }
             }
             remote.setFlipX(playerInfo.flipX);
         }
