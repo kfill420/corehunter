@@ -11,7 +11,7 @@ export default class Player {
     constructor(scene, x, y) {
         this.scene = scene;
 
-        // --- 1. CONFIGURATION PHYSIQUE (Matter.js) ---
+        // --- 1. CONFIGURATION PHYSIQUE ---
         this.body = scene.matter.add.circle(x, y + 10, 5, {
             isSensor: false,
             inertia: Infinity,
@@ -49,8 +49,8 @@ export default class Player {
         
         // Récupération
         this.lastDamageTime = 0;
-        this.regenRate = 0.0001; // Régénération par milliseconde
-        this.regenDelay = 10000; // 10 secondes sans dégâts avant de regen
+        this.regenRate = 0.0001;
+        this.regenDelay = 10000;
 
         this.activeHitbox = null;
 
@@ -58,9 +58,6 @@ export default class Player {
         this.createSprite(x, y);
     }
 
-    /**
-     * Crée les sprites et génère les animations pour le héros et son arme
-     */
     createSprite(x, y) {
         // Sprite du Héros
         this.sprite = this.scene.add.sprite(x, y, "hero-idle-0").setScale(0.04);
@@ -73,9 +70,6 @@ export default class Player {
 
         const anims = this.scene.anims;
 
-        /**
-         * Helper pour créer des animations synchronisées
-         */
         const createDoubleAnim = (key, length, rate, repeat = -1) => {
             // Animation du Héros
             if (!anims.exists(key)) {
@@ -122,9 +116,7 @@ export default class Player {
         this.playDualAnim("idle");
     }
 
-    /**
-     * Boucle principale du joueur (mouvement, regen, sync visuelle)
-     */
+
     update(cursors, keys, delta, collisionBodies) {
         if (this.isDead) return;
 
@@ -210,12 +202,10 @@ export default class Player {
         this.weaponSprite.depth = this.sprite.depth - 0.1;
         this.weaponSprite.setFlipX(this.sprite.flipX);
 
-        // Ajustement visuel pour la batte de baseball au repos
         if (!this.isAttacking && this.currentWeapon === 'baseball') {
             this.weaponSprite.y -= 6;
         }
 
-        // --- À AJOUTER À LA FIN DU UPDATE ---
         if (this.scene.gameMode === 'multi' && !this.isDead) {
             const currentData = {
                 x: Math.round(this.sprite.x),

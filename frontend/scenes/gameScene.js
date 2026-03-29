@@ -40,11 +40,28 @@ export default class GameScene extends Phaser.Scene {
         // 5. Gestion des événements globaux
         this._setupCollisionEvents();
 
+        if (this.gameMode === 'multi') {
+    // 1. On rejoint la room (indispensable pour recevoir les slimes de cette room)
+    networkManager.joinRoom("default"); // Ou l'ID de ta room
+
+    // 2. On traite les joueurs qui sont arrivés pendant le chargement
+    if (networkManager.pendingPlayers) {
+        this.spawnRemotePlayers(networkManager.pendingPlayers);
+        networkManager.pendingPlayers = null;
+    }
+    
+    // 3. On demande explicitement les joueurs (au cas où)
+    networkManager.requestCurrentPlayers();
+
+    // 4. On force une demande de mise à jour des slimes si le serveur ne l'envoie pas
+    networkManager.socket.emit("requestSlimes"); 
+}
+
         // On récupère le NetworkManager (importé ou global selon ta structure)
         if (this.gameMode === 'multi') {
             if (networkManager.pendingPlayers) {
                 this.spawnRemotePlayers(networkManager.pendingPlayers);
-                networkManager.pendingPlayers = null; // On vide la file
+                networkManager.pendingPlayers = null;
             }
             networkManager.requestCurrentPlayers();
         }
@@ -56,16 +73,6 @@ export default class GameScene extends Phaser.Scene {
         if (!isPaused && this.player) {
             this.player.update(null, this.keys, delta, this.staticBodies);
             this._updateEnemies();
-
-            // ENVOI RÉSEAU
-            if (this.gameMode === 'multi' && networkManager.socket) {
-                networkManager.sendAction({
-                    x: this.player.sprite.x,
-                    y: this.player.sprite.y,
-                    anim: this.player.sprite.anims.currentAnim?.key,
-                    flipX: this.player.sprite.flipX
-                });
-            }
         } else {
             if (this.player?.body) this.matter.body.setVelocity(this.player.body, { x: 0, y: 0 });
         }
@@ -210,11 +217,9 @@ export default class GameScene extends Phaser.Scene {
     updateEnemiesFromServer(serverSlimes) {
         Object.values(serverSlimes).forEach(data => {
             if (data.dead) {
-                if (data.dead) {
-                    const slime = this.enemies.find(e => e.id === data.id);
-                    if (slime && !slime.isDead) slime.die();
-                    return;
-                }
+                const slime = this.enemies.find(e => e.id === data.id);
+                if (slime && !slime.isDead) slime.die();
+                return;
             }
 
             let slime = this.enemies.find(e => e.id === data.id);

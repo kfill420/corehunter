@@ -115,7 +115,7 @@ export default class Slime {
     update() {
         if (this.isDead || !this.sprite || !this.sprite.body) return;
 
-        const lerpFactor = 0.01;
+        const lerpFactor = 0.15;
         this.sprite.x = Phaser.Math.Linear(this.sprite.x, this.targetX, lerpFactor);
         this.sprite.y = Phaser.Math.Linear(this.sprite.y, this.targetY, lerpFactor);
     }
@@ -136,12 +136,11 @@ export default class Slime {
     
     if (serverData.isMoving) {
         this.idleTimer = 0;
-        // On envoie le vecteur de direction globale
         this.updateDirectionalAnim({ x: dx, y: dy }, 'run');
         this.handleMoveSounds();
     } else {
         this.idleTimer++;
-        if (this.idleTimer > 10) { 
+        if (this.idleTimer > 5) { 
             this.updateDirectionalAnim(null, 'idle');
         }
     }
@@ -264,11 +263,9 @@ export default class Slime {
     takeDamage(amount) {
         if (this.isHurt || this.isDead) return;
 
-        if (this.scene.gameMode === 'multi') {
-            networkManager.socket.emit("hitSlime", { id: this.id, damage: amount });
-        }
+        if (this.scene.gameMode === 'multi')
+            networkManager.sendHit(this.id, amount);
 
-        // this.hp -= amount;
         this.isHurt = true;
         this.sprite.setTint(0xff0000);
 
