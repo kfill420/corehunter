@@ -25,7 +25,7 @@ class NetworkManager {
         this.socket.on("allSlimesReset", (newSlimes) => {
             const scene = gameInstance.scene.getScene('GameScene');
             if (scene && scene.sys.isActive()) {
-                scene.updateEnemiesFromServer(newSlimes);
+                scene.enemyManager.sync(newSlimes);
             }
         });
     }
@@ -62,45 +62,44 @@ class NetworkManager {
 
         this.socket.on("newPlayer", (playerInfo) => {
             const scene = getActiveGameScene();
-            if (scene && scene.sys.isActive()) scene.addRemotePlayer(playerInfo);
+            if (scene && scene.sys.isActive()) scene.remotePlayer.add(playerInfo);
         });
 
         this.socket.on("playerMoved", (playerInfo) => {
-            console.log("Mouvement reçu pour:", playerInfo.playerId);
             const scene = getActiveGameScene();
-            if (scene && scene.sys.isActive()) scene.updateRemotePlayer(playerInfo);
+            if (scene && scene.sys.isActive()) scene.remotePlayer.update(playerInfo);
         });
 
         this.socket.on("userDisconnected", (playerId) => {
             const scene = getActiveGameScene();
-            if (scene && scene.sys.isActive()) scene.removeRemotePlayer(playerId);
+            if (scene && scene.sys.isActive()) scene.remotePlayer.remove(playerId);
         });
 
         this.socket.on("slimeUpdate", (serverSlimes) => {
             const scene = getActiveGameScene();
             if (scene && scene.sys.isActive()) {
-                scene.updateEnemiesFromServer(serverSlimes);
+                scene.enemyManager.sync(serverSlimes);
             }
         });
 
         this.socket.on("slimeStatUpdate", (data) => {
             const scene = getActiveGameScene();
             if (scene && scene.sys.isActive()) {
-                scene.handleSlimeStatChange(data);
+                scene.enemyManager.handleStatChange(data);
             }
         });
 
         this.socket.on("slimeAction", (data) => {
             const scene = getActiveGameScene();
             if (scene && scene.sys.isActive()) {
-                scene.handleSlimeAction(data);
+                scene.enemyManager.handleAction(data);
             }
         });
 
         this.socket.on("allSlimesReset", (serverSlimes) => {
             const scene = getActiveGameScene();
             if (scene && scene.sys.isActive()) {
-                scene.updateEnemiesFromServer(serverSlimes);
+                scene.enemyManager.sync(serverSlimes);
             }
         });
     }

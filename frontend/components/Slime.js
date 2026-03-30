@@ -197,7 +197,7 @@ export default class Slime {
     if (this.isAttacking || this.isDead) return;
 
     const isMe = (networkManager.socket.id === targetId);
-    let targetSprite = isMe ? this.scene.player.sprite : this.scene.otherPlayers.get(targetId);
+    let targetSprite = isMe ? this.scene.player.sprite : this.scene.remotePlayer.otherPlayers.get(targetId);
     
     if (!targetSprite || !targetSprite.active) return;
 
