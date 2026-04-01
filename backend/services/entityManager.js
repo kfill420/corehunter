@@ -272,9 +272,9 @@ class EntityManager {
                         }
                         if (!foundPath) {
                             if (!this.isColliding(slime.x + moveVec.x * 25, slime.y)) {
-                                finalVec.y = 0; // On annule Y pour longer horizontalement
+                                finalVec.y = 0;
                             } else if (!this.isColliding(slime.x, slime.y + moveVec.y * 25)) {
-                                finalVec.x = 0; // On annule X pour longer verticalement
+                                finalVec.x = 0;
                             }
                         }
                     }
