@@ -1,13 +1,118 @@
+const fs = require('fs');
+const path = require('path');
+
 class EntityManager {
     constructor(io) {
         this.io = io;
         this.rooms = {};
+        this.loadMapData();
         this.init();
     }
 
     init() {
-        // Boucle à 30 FPS
         setInterval(() => this.update(33), 33);
+    }
+
+    loadMapData() {
+        const mapPath = path.join(__dirname, '../assets/map/map2.tmj');
+        const map = JSON.parse(fs.readFileSync(mapPath));
+        
+        this.tileWidth = map.tilewidth;
+        this.tileHeight = map.tileheight;
+        this.mapWidth = map.width;
+        this.tileCollisions = {};
+        this.staticObjects = [];
+
+        map.tilesets.forEach(ts => {
+            let tilesetData = ts;
+            if (ts.source) {
+                const tsPath = path.join(__dirname, '../assets/map/', ts.source);
+                try {
+                    tilesetData = JSON.parse(fs.readFileSync(tsPath));
+                } catch (e) { return; }
+            }
+
+            const firstGid = ts.firstgid;
+            if (tilesetData.tiles) {
+                tilesetData.tiles.forEach(tile => {
+                    if (tile.objectgroup && tile.objectgroup.objects) {
+                        this.tileCollisions[tile.id + firstGid] = tile.objectgroup.objects;
+                    }
+                });
+            }
+        });
+
+        // On garde les calques de tuiles habituels
+        this.obstacleLayers = map.layers.filter(l => l.name.startsWith("Obstacle") && l.data);
+
+        // On récupère les objets
+        map.layers.forEach(layer => {
+            if (layer.type === "objectgroup" && (layer.name === "Bushes" || layer.name.startsWith("Obstacle"))) {
+                layer.objects.forEach(obj => {
+                    const hasTileCollision = obj.gid && this.tileCollisions[String(obj.gid)];
+                    const isManualShape = !obj.gid && (obj.width > 0 && obj.height > 0);
+
+                    if (hasTileCollision || isManualShape) {
+                        this.staticObjects.push(obj);
+                    }
+                });
+            }
+        });
+    }
+
+    isColliding(x, y) {
+        // TILE LAYERS (Murs, Grille)
+        const tileX = Math.floor(x / this.tileWidth);
+        const tileY = Math.floor(y / this.tileHeight);
+        
+        if (tileX < 0 || tileX >= this.mapWidth || tileY < 0) return true;
+
+        const index = tileY * this.mapWidth + tileX;
+
+        for (const layer of this.obstacleLayers) {
+            if (!layer.data[index]) continue;
+            const gid = layer.data[index];
+
+            if (gid > 0) {
+                const shapes = this.tileCollisions[String(gid)];
+                if (shapes) {
+                    const localX = x % this.tileWidth;
+                    const localY = y % this.tileHeight;
+                    const collision = shapes.some(obj => {
+                        return localX >= obj.x && localX <= obj.x + obj.width &&
+                               localY >= obj.y && localY <= obj.y + obj.height;
+                    });
+                    if (collision) return true;
+                } else {
+                    return true; 
+                }
+            }
+        }
+
+        // OBJECT LAYERS 
+        for (const obj of this.staticObjects) {
+            if (obj.gid) {
+                const shapes = this.tileCollisions[String(obj.gid)];
+                if (shapes) {
+                    // Calcul de la position de base
+                    const baseX = obj.x;
+                    const baseY = obj.y - obj.height;
+                
+                    const collision = shapes.some(shape => {
+                        return x >= baseX + shape.x && x <= baseX + shape.x + shape.width &&
+                               y >= baseY + shape.y && y <= baseY + shape.y + shape.height;
+                    });
+                    if (collision) return true;
+                }
+            } else {
+                if (x >= obj.x && x <= obj.x + obj.width &&
+                    y >= obj.y && y <= obj.y + obj.height) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     ensureRoom(roomId) {
@@ -29,7 +134,7 @@ class EntityManager {
         };
 
         for (let i = 0; i < 3; i++) {
-            const id = `slime_${roomId}_${i}`; // ID unique par room
+            const id = `slime_${roomId}_${i}`;
             const type = (i % 3) + 1;
             this.rooms[roomId].slimes[id] = {
                 id: id,
@@ -69,7 +174,7 @@ class EntityManager {
             Object.values(room.slimes).forEach(slime => {
                 if (slime.dead || slime.isAttacking) return;
 
-                // 1. Trouver le joueur le plus proche
+                // Trouver le joueur le plus proche
                 let closestPlayer = null;
                 let minDist = Infinity;
                 
@@ -81,7 +186,7 @@ class EntityManager {
                     }
                 });
 
-                // 2. Logique d'état
+                // Logique d'état
                 if (closestPlayer && minDist < slime.detectionRange) {
                     slime.state = "CHASE";
                 } else {
@@ -109,7 +214,7 @@ class EntityManager {
                     return;
                 }
 
-                // 3. Calcul du mouvement
+                // Calcul du mouvement
                 let moveVec = { x: 0, y: 0 };
                 let currentSpeed = slime.stats.speed;
 
@@ -143,10 +248,61 @@ class EntityManager {
                     moveVec = slime.wanderVec;
                 }
 
-                // 4. Application du mouvement (vitesse * delta)
-                slime.x += moveVec.x * currentSpeed * delta;
-                slime.y += moveVec.y * currentSpeed * delta;
-                slime.isMoving = (moveVec.x !== 0 || moveVec.y !== 0);
+                // Application du mouvement
+                if (moveVec.x !== 0 || moveVec.y !== 0) {
+                    let finalVec = { x: moveVec.x, y: moveVec.y };
+
+                    const isBlocked = this.isColliding(slime.x + finalVec.x * 20, slime.y + finalVec.y * 20)
+
+                    if (isBlocked && slime.state === "CHASE") {
+                        const angleToTest = [Math.PI / 4, -Math.PI / 4, Math.PI / 2, -Math.PI / 2, Math.PI / 1.5, -Math.PI / 1.5];
+                        let foundPath = false;
+
+                        for (let angleOffSet of angleToTest) {
+                            const currentAngle = Math.atan2(moveVec.y, moveVec.x);
+                            const testX = Math.cos(currentAngle + angleOffSet);
+                            const testY = Math.sin(currentAngle + angleOffSet);
+
+                            if (!this.isColliding(slime.x + testX * 30, slime.y + testY * 30)) {
+                                finalVec.x = testX;
+                                finalVec.y = testY;
+                                foundPath = true;
+                                break;
+                            }
+                        }
+                        if (!foundPath) {
+                            if (!this.isColliding(slime.x + moveVec.x * 25, slime.y)) {
+                                finalVec.y = 0;
+                            } else if (!this.isColliding(slime.x, slime.y + moveVec.y * 25)) {
+                                finalVec.x = 0;
+                            }
+                        }
+                    }
+
+                    const nextX = slime.x + finalVec.x * currentSpeed * delta;
+                    const nextY = slime.y + finalVec.y * currentSpeed * delta;
+
+                    const radius = 8;
+
+                    const checkX = nextX + (finalVec.x > 0 ? radius : -radius);
+                    if (!this.isColliding(checkX, slime.y)) {
+                        slime.x = nextX;
+                    } else if (slime.state === "WANDER") {
+                        // Si on tape un mur en errant, on change de direction au prochain cycle
+                        slime.nextDecisionTime = 0; 
+                    }
+                
+                    const checkY = nextY + (finalVec.y > 0 ? radius : -radius);
+                    if (!this.isColliding(slime.x, checkY)) {
+                        slime.y = nextY;
+                    } else if (slime.state === "WANDER") {
+                        slime.nextDecisionTime = 0;
+                    }
+                
+                    slime.isMoving = true;
+                } else {
+                    slime.isMoving = false;
+                }
             });
 
             // Envoi groupé des positions à la room spécifique
@@ -173,7 +329,7 @@ class EntityManager {
             
                 if (count === 0) {
                     console.log(`[EntityManager] Room ${roomId} vide -> Suppression.`);
-                    delete this.rooms[roomId]; // C'est ici que le reset se produit
+                    delete this.rooms[roomId];
                 }
             }
         });

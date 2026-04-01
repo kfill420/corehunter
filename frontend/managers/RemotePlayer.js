@@ -8,6 +8,7 @@ export default class RemotePlayerManager {
         if (this.otherPlayers.has(info.playerId)) return;
     
         const remote = this.scene.matter.add.sprite(info.x, info.y, 'hero-idle-0');
+        remote.setBody({ type: 'circle', radius: 125});
         remote.setScale(0.04);
         remote.setOrigin(0.5, 0.8);
         remote.setFixedRotation();
