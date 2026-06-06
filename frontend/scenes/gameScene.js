@@ -85,6 +85,19 @@ export default class GameScene extends Phaser.Scene {
             const remoteRadius = remoteBody.circleRadius;
         
             const dist = Phaser.Math.Distance.Between(hx, hy, remote.sprite.x, remote.sprite.y);
+
+            console.log({
+            dist: Math.round(dist),
+            hitRadius,
+            remoteRadius,
+            threshold: hitRadius + remoteRadius,
+            wouldHit: dist < hitRadius + remoteRadius,
+            // Position hitbox vs remote
+            hx: Math.round(hx), hy: Math.round(hy),
+            rx: Math.round(remote.sprite.x), ry: Math.round(remote.sprite.y),
+            // Position cible (interpolée vs reçue du serveur)
+            targetX: Math.round(remote.targetX), targetY: Math.round(remote.targetY)
+        });
         
             if (dist < hitRadius + remoteRadius) {
                 remote._hitThisAttack = true;
