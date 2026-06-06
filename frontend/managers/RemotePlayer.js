@@ -34,7 +34,7 @@ export default class RemotePlayerManager {
         const remote = this.otherPlayers.get(playerInfo.playerId);
         if (!remote) return;
 
-        const { sprite, weaponSprite } = remote; // ← déstructuration des deux
+        const { sprite, weaponSprite } = remote;
 
         if (!sprite.active || !sprite.texture) return;
 
@@ -42,6 +42,10 @@ export default class RemotePlayerManager {
         weaponSprite.setPosition(playerInfo.x, playerInfo.y);
         weaponSprite.setDepth(sprite.depth - 0.1);
         weaponSprite.setFlipX(playerInfo.flipX);
+        if (playerInfo.weapon === 'baseball') {
+            const isAttacking = playerInfo.anim?.includes('attack');
+            if (!isAttacking) weaponSprite.y -= 6;
+        }
 
         if (playerInfo.isDead) {
             sprite.setAngle(90);
@@ -75,7 +79,7 @@ export default class RemotePlayerManager {
 
         this.otherPlayers.delete(playerId);
 
-        const { sprite, weaponSprite } = remote; // ← déstructuration des deux
+        const { sprite, weaponSprite } = remote;
 
         if (this.scene.sortingGroup) this.scene.sortingGroup.remove(sprite, false);
 
