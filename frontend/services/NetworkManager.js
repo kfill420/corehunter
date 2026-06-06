@@ -92,7 +92,7 @@ class NetworkManager {
         });
 
         this.socket.on("connect", () => {
-            console.log("Connecté au serveur, demande des données...");
+            console.log("Connecté au serveur");
             if (this.currentRoom) {
                 this.socket.emit("joinRoom", this.currentRoom);
             }
@@ -141,6 +141,24 @@ class NetworkManager {
             const scene = getActiveGameScene();
             if (scene && scene.sys.isActive()) {
                 scene.enemyManager.sync(serverSlimes);
+            }
+        });
+
+        this.socket.on("playerTookDamage", (data) => {
+            const scene = getActiveGameScene();
+            if (!scene || !scene.sys.isActive()) return;
+
+            // Si c'est le joueur local qui est touché
+            if (data.targetId === this.socket.id) {
+                scene.player.takeDamage(data.damage);
+                return;
+            }
+        
+            // Feedback visuel sur le remote player touché
+            const remote = scene.remotePlayer.otherPlayers.get(data.targetId);
+            if (remote) {
+                remote.sprite.setTint(0xff0000);
+                scene.time.delayedCall(200, () => remote.sprite.clearTint());
             }
         });
     }

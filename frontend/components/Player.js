@@ -288,6 +288,7 @@ export default class Player {
                 this.scene.matter.world.remove(this.activeHitbox);
                 this.activeHitbox = null;
             }
+            this.scene.remotePlayer?.otherPlayers.forEach(r => r._hitThisAttack = false);
             this.playDualAnim("idle");
         });
     }
@@ -333,6 +334,7 @@ export default class Player {
                 this.scene.matter.world.remove(this.activeHitbox);
                 this.activeHitbox = null;
             }
+            this.scene.remotePlayer?.otherPlayers.forEach(r => r._hitThisAttack = false);
             this.playDualAnim("idle");
         });
     }

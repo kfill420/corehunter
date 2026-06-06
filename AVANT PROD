@@ -1,0 +1,6 @@
+index.html -> Il faut changer https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js par https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js
+
+bug:
+- quand un joueur quitte le lobby pas actualiser
+- bruit slime en local qui si frape le joueur local
+- joeuur spawn au meme endroit

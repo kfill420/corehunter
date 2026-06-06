@@ -105,6 +105,16 @@ export default class LobbyScene extends Phaser.Scene {
         this.events.once('shutdown', () => {
             window.removeEventListener('paste', handlePaste);
             networkManager.cleanupLobbyEvents();
+
+            if (this.playerNameTexts) {
+    this.playerNameTexts.forEach(t => t.destroy());
+    this.playerNameTexts = [];
+}
+        
+            if (this.particles) {
+                this.particles.destroy();
+                this.particles = null;
+            }
         });
 
         // Gestion du clic pour copier
@@ -125,56 +135,50 @@ export default class LobbyScene extends Phaser.Scene {
             .setVisible(false);
 
         networkManager.setupLobbyEvents(this);
-        this.events.once('shutdown', () => networkManager.cleanupLobbyEvents());
     }
 
     updateUI() {
-        if (!networkManager.currentRoom) return;
+    if (!networkManager.currentRoom) return;
+    if (!this.sys || !this.sys.isActive()) return;
 
-        // Mise à jour du titre du salon
-        this.roomTitleText.setText(`CODE : ${networkManager.currentRoom}`);
+    this.roomTitleText.setText(`CODE : ${networkManager.currentRoom}`);
 
-        // Nettoyage des anciens noms
-        if (this.playerNamesGroup) {
-            this.playerNamesGroup.clear(true, true);
-        } else {
-            this.playerNamesGroup = this.add.group();
-        }
-
-        // Paramètres de la grille
-        const columns = 3;
-        const colWidth = 180;
-        const rowHeight = 40;
-        const startX = this.scale.width / 2 - colWidth;
-        const startY = 450;
-
-        networkManager.roomPlayers.forEach((player, index) => {
-            const col = index % columns;
-            const row = Math.floor(index / columns);
-
-            const x = startX + (col * colWidth);
-            const y = startY + (row * rowHeight);
-
-            const nameText = this.add.text(x, y, `• ${player.name}`, {
-                fontSize: '18px',
-                fill: (index === 0) ? '#00ff00' : '#ffffff',
-                fontFamily: 'Arial'
-            }).setOrigin(0.5);
-
-            this.playerNamesGroup.add(nameText);
-        });
-
-        // Positionnement dynamique du bouton Lancer
-        const rowCount = Math.ceil(networkManager.roomPlayers.length / columns);
-        const gridBottom = startY + (rowCount * rowHeight);
-        const gap = 40;
-
-        this.btnStart.setPosition(this.scale.width / 2, gridBottom + gap);
-
-        // Visibilité du bouton Host
-        const isHost = networkManager.roomPlayers[0]?.id === networkManager.socket.id;
-        this.btnStart.setVisible(isHost);
+    // Détruire les anciens textes via un simple tableau JS — plus de Group
+    if (this.playerNameTexts) {
+        this.playerNameTexts.forEach(t => t.destroy());
     }
+    this.playerNameTexts = [];
+
+    const columns = 3;
+    const colWidth = 180;
+    const rowHeight = 40;
+    const startX = this.scale.width / 2 - colWidth;
+    const startY = 450;
+
+    networkManager.roomPlayers.forEach((player, index) => {
+        const col = index % columns;
+        const row = Math.floor(index / columns);
+
+        const x = startX + (col * colWidth);
+        const y = startY + (row * rowHeight);
+
+        const nameText = this.add.text(x, y, `• ${player.name}`, {
+            fontSize: '18px',
+            fill: (index === 0) ? '#00ff00' : '#ffffff',
+            fontFamily: 'Arial'
+        }).setOrigin(0.5);
+
+        this.playerNameTexts.push(nameText); // ← tableau JS, pas un Group Phaser
+    });
+
+    const rowCount = Math.ceil(networkManager.roomPlayers.length / columns);
+    const gridBottom = startY + (rowCount * rowHeight);
+
+    this.btnStart.setPosition(this.scale.width / 2, gridBottom + 40);
+
+    const isHost = networkManager.roomPlayers[0]?.id === networkManager.socket.id;
+    this.btnStart.setVisible(isHost);
+}
 
     _updateCodeDisplay() {
         this.codeDisplay.setText(this.inputText.padEnd(6, '_').split('').join(' '));

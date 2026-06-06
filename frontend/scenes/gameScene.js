@@ -54,6 +54,11 @@ export default class GameScene extends Phaser.Scene {
         if (!isPaused && this.player) {
             this.player.update(null, this.keys, delta, this.staticBodies);
             this.enemyManager.update();
+            this.remotePlayer.interpolate();
+
+            if (this.gameMode === 'multi' && this.player.isAttacking && this.player.activeHitbox) {
+                this._checkPvPHits();
+            }
         } else {
             if (this.player?.body) this.matter.body.setVelocity(this.player.body, { x: 0, y: 0 });
         }
@@ -61,6 +66,34 @@ export default class GameScene extends Phaser.Scene {
         // On met à jour l'UI et le tri visuel
         this._dispatchUIUpdate();
         if (this.sortingGroup) applyYSorting(this.sortingGroup, this.player.sprite);
+    }
+
+    _checkPvPHits() {
+        if (!this.player.activeHitbox) return;
+        
+        const hx = this.player.activeHitbox.position.x;
+        const hy = this.player.activeHitbox.position.y;
+        const hitRadius = this.player.activeHitbox.circleRadius;
+        
+        this.remotePlayer.otherPlayers.forEach((remote, playerId) => {
+            if (!remote.sprite.active) return;
+            if (remote._hitThisAttack) return;
+        
+            // ← Récupère directement le rayon depuis le body Matter du remote
+            const remoteBody = remote.sprite.body;
+            if (!remoteBody) return;
+            const remoteRadius = remoteBody.circleRadius;
+        
+            const dist = Phaser.Math.Distance.Between(hx, hy, remote.sprite.x, remote.sprite.y);
+        
+            if (dist < hitRadius + remoteRadius) {
+                remote._hitThisAttack = true;
+                networkManager.sendAction('playerHitPlayer', {
+                    targetId: playerId,
+                    damage: 1,
+                });
+            }
+        });
     }
 
     _setupMap() {
@@ -158,6 +191,19 @@ export default class GameScene extends Phaser.Scene {
                     if (enemyBody) {
                         const enemy = this.enemyManager.enemies.find(e => e.sprite?.body === enemyBody);
                         enemy?.takeDamage(1);
+                    }
+
+                    const hitbox = bodyA.label.includes('hero') ? bodyA : bodyB;
+                    const other = hitbox === bodyA ? bodyB : bodyA;
+
+                    const remoteEntry = [...this.remotePlayer.otherPlayers.values()]
+                        .find(r => r.sprite.body === other);
+
+                    if (remoteEntry) {
+                        networkManager.sendAction('playerHitPlayer', {
+                            targetId: remoteEntry.sprite.playerId,
+                            damage: 1,
+                        });
                     }
                 }
             });
