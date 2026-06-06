@@ -30,15 +30,6 @@ function initSocket(server) {
       weapon: 'baseball'
     };
 
-    // socket.on("joinRoom", (roomId) => {
-    //     socket.join(roomId);
-    //     entityManager.ensureRoom(roomId);
-        
-    //     socket.emit("slimeUpdate", entityManager.rooms[roomId].slimes);
-        
-    //     socket.emit("currentPlayers", entityManager.rooms[roomId].players);
-    // });
-
     socket.on("createRoom", () => {
         const roomId = Math.random().toString(36).substring(2, 8).toUpperCase(); // Code à 6 car.
         rooms[roomId] = {
@@ -61,7 +52,6 @@ function initSocket(server) {
                 rooms[roomId].players.push({ id: socket.id, name: `Player ${rooms[roomId].players.length + 1}` });
             }
             
-            // On prévient tout le monde dans la salle
             socket.emit("roomJoined", { roomId, players: rooms[roomId].players });
             io.to(roomId).emit("playerJoined", rooms[roomId].players);
         } else {
