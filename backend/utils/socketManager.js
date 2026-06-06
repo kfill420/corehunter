@@ -113,6 +113,15 @@ function initSocket(server) {
       });
     });
 
+    socket.on("playerHitPlayer", (data) => {
+      const { targetId, damage, roomId } = data;
+      io.to(roomId).emit("playerTookDamage", {
+        targetId,
+        damage,
+        attackerId: socket.id
+      });
+    })
+
     socket.on("leaveGameManual", () => {
         console.log(`[Server] Départ manuel du joueur : ${socket.id}`);
         entityManager.removePlayer(socket.id);

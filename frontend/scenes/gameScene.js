@@ -159,6 +159,19 @@ export default class GameScene extends Phaser.Scene {
                         const enemy = this.enemyManager.enemies.find(e => e.sprite?.body === enemyBody);
                         enemy?.takeDamage(1);
                     }
+
+                    const hitbox = bodyA.label.includes('hero') ? bodyA : bodyB;
+                    const other = hitbox === bodyA ? bodyB : bodyA;
+                    
+                    const remoteEntry = [...this.remotePlayer.otherPlayers.values()]
+                        .find(r => r.sprite.body === other);
+                    
+                    if (remoteEntry) {
+                        networkManager.sendAction('playerHitPlayer', {
+                            targetId: remoteEntry.sprite.playerId,
+                            damage: 1,
+                        });
+                    }
                 }
             });
         });
