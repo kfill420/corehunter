@@ -60,6 +60,33 @@ class EntityManager {
         });
     }
 
+    separateSlimes(roomId) {
+        const slimes = Object.values(this.rooms[roomId].slimes).filter(s => !s.dead);
+        const minDist = 20; // distance minimale entre deux slimes
+
+        for (let i = 0; i < slimes.length; i++) {
+            for (let j = i + 1; j < slimes.length; j++) {
+                const a = slimes[i];
+                const b = slimes[j];
+
+                const dx = b.x - a.x;
+                const dy = b.y - a.y;
+                const dist = Math.hypot(dx, dy);
+
+                if (dist < minDist && dist > 0) {
+                    const overlap = (minDist - dist) / 2;
+                    const nx = dx / dist;
+                    const ny = dy / dist;
+
+                    a.x -= nx * overlap;
+                    a.y -= ny * overlap;
+                    b.x += nx * overlap;
+                    b.y += ny * overlap;
+                }
+            }
+        }
+    }
+
     isColliding(x, y) {
         // TILE LAYERS (Murs, Grille)
         const tileX = Math.floor(x / this.tileWidth);
@@ -305,6 +332,7 @@ class EntityManager {
                 }
             });
 
+            this.separateSlimes(roomId);
             // Envoi groupé des positions à la room spécifique
             this.io.to(roomId).emit("slimeUpdate", room.slimes);
         })

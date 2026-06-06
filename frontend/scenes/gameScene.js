@@ -54,6 +54,7 @@ export default class GameScene extends Phaser.Scene {
         if (!isPaused && this.player) {
             this.player.update(null, this.keys, delta, this.staticBodies);
             this.enemyManager.update();
+            this.remotePlayer.interpolate();
         } else {
             if (this.player?.body) this.matter.body.setVelocity(this.player.body, { x: 0, y: 0 });
         }
@@ -162,10 +163,10 @@ export default class GameScene extends Phaser.Scene {
 
                     const hitbox = bodyA.label.includes('hero') ? bodyA : bodyB;
                     const other = hitbox === bodyA ? bodyB : bodyA;
-                    
+
                     const remoteEntry = [...this.remotePlayer.otherPlayers.values()]
                         .find(r => r.sprite.body === other);
-                    
+
                     if (remoteEntry) {
                         networkManager.sendAction('playerHitPlayer', {
                             targetId: remoteEntry.sprite.playerId,

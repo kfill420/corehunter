@@ -38,42 +38,66 @@ export default class RemotePlayerManager {
         if (!remote) return;
 
         const { sprite, weaponSprite } = remote;
-
         if (!sprite.active || !sprite.texture) return;
 
-        sprite.setPosition(playerInfo.x, playerInfo.y);
-        weaponSprite.setPosition(playerInfo.x, playerInfo.y);
-        weaponSprite.setDepth(sprite.depth - 0.1);
-        weaponSprite.setFlipX(playerInfo.flipX);
-        if (playerInfo.weapon === 'baseball') {
-            const isAttacking = playerInfo.anim?.includes('attack');
-            if (!isAttacking) weaponSprite.y -= 6;
-        }
+        // ← Stocker la position cible au lieu d'appliquer directement
+        remote.targetX = playerInfo.x;
+        remote.targetY = playerInfo.y;
+        remote.targetFlipX = playerInfo.flipX;
+        remote.targetAnim = playerInfo.anim;
+        remote.targetWeapon = playerInfo.weapon;
+        remote.targetIsDead = playerInfo.isDead;
+    }
 
-        if (playerInfo.isDead) {
-            sprite.setAngle(90);
-            sprite.setTint(0x333333);
-            sprite.anims.stop();
-            weaponSprite.setVisible(false);
-        } else {
-            sprite.setAngle(0);
-            sprite.clearTint();
-            sprite.setFlipX(playerInfo.flipX);
+    // Nouvelle méthode appelée dans gameScene.update()
+    interpolate() {
+        this.otherPlayers.forEach((remote) => {
+            if (!remote.sprite.active) return;
+            const { sprite, weaponSprite } = remote;
 
-            if (playerInfo.anim) sprite.play(playerInfo.anim, true);
+            if (remote.targetX === undefined) return;
 
-            if (playerInfo.weapon && playerInfo.weapon !== '') {
-                const weaponKey = `${playerInfo.weapon}-${playerInfo.anim}`;
-                if (this.scene.anims.exists(weaponKey)) {
-                    weaponSprite.setVisible(true);
-                    weaponSprite.play(weaponKey, true);
+            const lerpFactor = 0.1;
+
+            sprite.setPosition(
+                Phaser.Math.Linear(sprite.x, remote.targetX, lerpFactor),
+                Phaser.Math.Linear(sprite.y, remote.targetY, lerpFactor)
+            );
+
+            weaponSprite.setPosition(sprite.x, sprite.y);
+            weaponSprite.setDepth(sprite.depth - 0.1);
+            weaponSprite.setFlipX(sprite.flipX);
+
+            if (remote.targetIsDead) {
+                sprite.setAngle(90);
+                sprite.setTint(0x333333);
+                sprite.anims.stop();
+                weaponSprite.setVisible(false);
+            } else {
+                sprite.setAngle(0);
+                sprite.clearTint();
+                sprite.setFlipX(remote.targetFlipX);
+
+                if (remote.targetAnim) sprite.play(remote.targetAnim, true);
+
+                if (remote.targetWeapon && remote.targetWeapon !== '') {
+                    const weaponKey = `${remote.targetWeapon}-${remote.targetAnim}`;
+                    if (this.scene.anims.exists(weaponKey)) {
+                        weaponSprite.setVisible(true);
+                        weaponSprite.play(weaponKey, true);
+                    } else {
+                        weaponSprite.setVisible(false);
+                    }
                 } else {
                     weaponSprite.setVisible(false);
                 }
-            } else {
-                weaponSprite.setVisible(false);
+
+                if (remote.targetWeapon === 'baseball') {
+                    const isAttacking = remote.targetAnim?.includes('attack');
+                    if (!isAttacking) weaponSprite.y -= 6;
+                }
             }
-        }
+        });
     }
 
     remove(playerId) {
