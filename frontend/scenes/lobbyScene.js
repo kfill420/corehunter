@@ -16,7 +16,15 @@ export default class LobbyScene extends Phaser.Scene {
         this._setupParticles(width, height);
 
         // Conteneur principal pour le contenu
-        this.add.rectangle(centerX, height / 2, width * 0.8, height * 0.8, 0x000000, 0.4).setOrigin(0.5);
+        const graphics = this.add.graphics();
+        graphics.fillStyle(0x000000, 0.4);
+        graphics.fillRoundedRect(
+            centerX - (width * 0.8) / 2,
+            height / 2 - (height * 0.8) / 2,
+            width * 0.8,
+            height * 0.8,
+            20
+        );
 
         // Titre
         this.add.text(centerX, 60, "SALLON MULTIJOUEUR", { 
