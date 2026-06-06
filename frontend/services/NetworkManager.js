@@ -92,7 +92,7 @@ class NetworkManager {
         });
 
         this.socket.on("connect", () => {
-            console.log("Connecté au serveur, demande des données...");
+            console.log("Connecté au serveur");
             if (this.currentRoom) {
                 this.socket.emit("joinRoom", this.currentRoom);
             }
@@ -147,7 +147,7 @@ class NetworkManager {
         this.socket.on("playerTookDamage", (data) => {
             const scene = getActiveGameScene();
             if (!scene || !scene.sys.isActive()) return;
-                
+
             // Si c'est le joueur local qui est touché
             if (data.targetId === this.socket.id) {
                 scene.player.takeDamage(data.damage);
