@@ -46,8 +46,13 @@ class NetworkManager {
             this.roomPlayers = players;
             lobbyScene.updateUI();
         });
-        this.socket.on("gameStarted", () => {
+        this.socket.on("gameStarted", (data) => {
             this.cleanupLobbyEvents();
+            const me = data.players.find(p => p.id === this.socket.id);
+            if (me) {
+                this.spawnX = me.spawnX;
+                this.spawnY = me.spawnY;
+            }
             lobbyScene.launchGame();
         });
         this.socket.on("error", (msg) => alert(msg));

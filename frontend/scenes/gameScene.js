@@ -79,23 +79,11 @@ export default class GameScene extends Phaser.Scene {
             if (!remote.sprite.active) return;
             if (remote._hitThisAttack) return;
         
-            // ← Récupère directement le rayon depuis le body Matter du remote
             const remoteBody = remote.sprite.body;
             if (!remoteBody) return;
             const remoteRadius = remoteBody.circleRadius;
         
             const dist = Phaser.Math.Distance.Between(hx, hy, remote.sprite.x, remote.sprite.y);
-
-            console.log({
-            dist: Math.round(dist),
-            hitRadius,
-            remoteRadius,
-            threshold: hitRadius + remoteRadius,
-            wouldHit: dist < hitRadius + remoteRadius,
-            hx: Math.round(hx), hy: Math.round(hy),
-            rx: Math.round(remote.sprite.x), ry: Math.round(remote.sprite.y),
-            targetX: Math.round(remote.targetX), targetY: Math.round(remote.targetY)
-        });
         
             if (dist < hitRadius + remoteRadius) {
                 remote._hitThisAttack = true;
@@ -141,7 +129,13 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _setupPlayer(map) {
-        this.player = new Player(this, (map.widthInPixels / 2) + 50, (map.heightInPixels / 2) + 50);
+        const spawnX = networkManager.spawnX || (map.widthInPixels / 2) + 50;
+        const spawnY = networkManager.spawnY || (map.heightInPixels / 2) + 50;
+
+        this.player = new Player(this, spawnX, spawnY);
+
+        networkManager.spawnX = null;
+        networkManager.spawnY = null;
         
         this.scene.launch('UIScene');
         const ui = this.scene.get('UIScene');
