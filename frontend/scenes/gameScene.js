@@ -92,10 +92,8 @@ export default class GameScene extends Phaser.Scene {
             remoteRadius,
             threshold: hitRadius + remoteRadius,
             wouldHit: dist < hitRadius + remoteRadius,
-            // Position hitbox vs remote
             hx: Math.round(hx), hy: Math.round(hy),
             rx: Math.round(remote.sprite.x), ry: Math.round(remote.sprite.y),
-            // Position cible (interpolée vs reçue du serveur)
             targetX: Math.round(remote.targetX), targetY: Math.round(remote.targetY)
         });
         
