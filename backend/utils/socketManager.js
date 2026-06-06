@@ -120,11 +120,13 @@ function initSocket(server) {
     });
 
     socket.on("playerHitPlayer", (data) => {
-      const { targetId, damage, roomId } = data;
+      const { targetId, damage, roomId, attackerX, attackerY } = data;
       io.to(roomId).emit("playerTookDamage", {
         targetId,
         damage,
-        attackerId: socket.id
+        attackerId: socket.id,
+        attackerX,
+        attackerY
       });
     })
 

@@ -155,7 +155,8 @@ class NetworkManager {
 
             // Si c'est le joueur local qui est touché
             if (data.targetId === this.socket.id) {
-                scene.player.takeDamage(data.damage);
+                const attackerSource = { x: data.attackerX, y: data.attackerY }
+                scene.player.takeDamage(data.damage, attackerSource);
                 return;
             }
         

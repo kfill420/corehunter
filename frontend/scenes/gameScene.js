@@ -90,6 +90,8 @@ export default class GameScene extends Phaser.Scene {
                 networkManager.sendAction('playerHitPlayer', {
                     targetId: playerId,
                     damage: 1,
+                    attackerX: this.player.sprite.x,
+                    attackerY: this.player.sprite.y,
                 });
             }
         });
