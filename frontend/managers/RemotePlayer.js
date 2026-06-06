@@ -6,68 +6,87 @@ export default class RemotePlayerManager {
 
     add(info) {
         if (this.otherPlayers.has(info.playerId)) return;
-    
-        const remote = this.scene.matter.add.sprite(info.x, info.y, 'hero-idle-0');
-        remote.setBody({ type: 'circle', radius: 125});
-        remote.setScale(0.04);
-        remote.setOrigin(0.5, 0.8);
-        remote.setFixedRotation();
-        remote.setStatic(true); 
-        remote.playerId = info.playerId;
+
+        const sprite = this.scene.matter.add.sprite(info.x, info.y, 'hero-idle-0');
+        sprite.setBody({ type: 'circle', radius: 125 });
+        sprite.setScale(0.04);
+        sprite.setOrigin(0.5, 0.8);
+        sprite.setFixedRotation();
+        sprite.setStatic(true);
+        sprite.playerId = info.playerId;
+
+        const weaponSprite = this.scene.add.sprite(info.x, info.y, '');
+        weaponSprite.setScale(0.04);
+        weaponSprite.setOrigin(0.5, 0.65);
+        weaponSprite.setVisible(false);
 
         if (info.isDead) {
-            remote.setAngle(90);
-            remote.setTint(0x333333);
+            sprite.setAngle(90);
+            sprite.setTint(0x333333);
         }
-        
-        if (this.scene.sortingGroup) this.scene.sortingGroup.add(remote);
-        this.otherPlayers.set(info.playerId, remote);
+
+        if (this.scene.sortingGroup) this.scene.sortingGroup.add(sprite);
+        this.otherPlayers.set(info.playerId, { sprite, weaponSprite });
     }
 
     update(playerInfo) {
         if (!playerInfo || !playerInfo.playerId) return;
         const remote = this.otherPlayers.get(playerInfo.playerId);
-        if (!remote || !remote.active || !remote.texture) return;
-        remote.setPosition(playerInfo.x, playerInfo.y);
+        if (!remote) return;
+
+        const { sprite, weaponSprite } = remote; // ← déstructuration des deux
+
+        if (!sprite.active || !sprite.texture) return;
+
+        sprite.setPosition(playerInfo.x, playerInfo.y);
+        weaponSprite.setPosition(playerInfo.x, playerInfo.y);
+        weaponSprite.setDepth(sprite.depth - 0.1);
+        weaponSprite.setFlipX(playerInfo.flipX);
+
         if (playerInfo.isDead) {
-            remote.setAngle(90);
-            remote.setTint(0x333333);
-            remote.anims.stop();
+            sprite.setAngle(90);
+            sprite.setTint(0x333333);
+            sprite.anims.stop();
+            weaponSprite.setVisible(false);
         } else {
-            remote.setAngle(0);
-            remote.setTint();
-            if (playerInfo.anim) {
-                remote.play(playerInfo.anim, true);
+            sprite.setAngle(0);
+            sprite.clearTint();
+            sprite.setFlipX(playerInfo.flipX);
+
+            if (playerInfo.anim) sprite.play(playerInfo.anim, true);
+
+            if (playerInfo.weapon && playerInfo.weapon !== '') {
+                const weaponKey = `${playerInfo.weapon}-${playerInfo.anim}`;
+                if (this.scene.anims.exists(weaponKey)) {
+                    weaponSprite.setVisible(true);
+                    weaponSprite.play(weaponKey, true);
+                } else {
+                    weaponSprite.setVisible(false);
+                }
+            } else {
+                weaponSprite.setVisible(false);
             }
         }
-        remote.setFlipX(playerInfo.flipX);
-    
     }
 
     remove(playerId) {
         const remote = this.otherPlayers.get(playerId);
         if (!remote) return;
-        
+
         this.otherPlayers.delete(playerId);
-        
-        // Retirer du groupe en PREMIER, avant tout le reste
-        if (this.scene.sortingGroup) {
-            this.scene.sortingGroup.remove(remote, false);
+
+        const { sprite, weaponSprite } = remote; // ← déstructuration des deux
+
+        if (this.scene.sortingGroup) this.scene.sortingGroup.remove(sprite, false);
+
+        sprite.setVisible(false);
+        sprite.setActive(false);
+        if (sprite.anims) sprite.anims.stop();
+        if (sprite.body) {
+            this.scene.matter.world.remove(sprite.body);
+            sprite.body = null;
         }
-    
-        // Rendre invisible et inactif immédiatement
-        remote.setVisible(false);
-        remote.setActive(false);
-    
-        // Stopper les animations
-        if (remote.anims) remote.anims.stop();
-    
-        // Retirer le body physique
-        if (remote.body) {
-            this.scene.matter.world.remove(remote.body);
-            remote.body = null;
-        }
-    
-        if (remote && remote.scene) remote.destroy();
+        if (sprite.scene) sprite.destroy();
+        if (weaponSprite && weaponSprite.scene) weaponSprite.destroy();
     }
 }
