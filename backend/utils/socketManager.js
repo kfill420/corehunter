@@ -14,6 +14,16 @@ function initSocket(server) {
     }
   });
 
+  const SPAWN_POINTS = [
+    { x: 520, y: 340 },
+    { x: 550, y: 340 },
+    { x: 575, y: 340 },
+    { x: 600, y: 340 },
+    { x: 625, y: 340 },
+    { x: 650, y: 340 },
+    { x: 675, y: 340 },
+  ];
+
   const entityManager = new EntityManager(io);
 
   const rooms = {};
@@ -62,7 +72,13 @@ function initSocket(server) {
     socket.on("startGameRequest", (roomId) => {
         if (rooms[roomId] && rooms[roomId].host === socket.id) {
             rooms[roomId].gameStarted = true;
-            io.to(roomId).emit("gameStarted");
+
+            const playersWithSpawn = rooms[roomId].players.map((player, index) => ({
+              ...player,
+              spawnX: SPAWN_POINTS[index % SPAWN_POINTS.length].x,
+              spawnY: SPAWN_POINTS[index % SPAWN_POINTS.length].y,
+            }));
+            io.to(roomId).emit("gameStarted", { players: playersWithSpawn });
         }
     });
 
