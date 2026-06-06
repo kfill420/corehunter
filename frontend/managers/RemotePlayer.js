@@ -25,7 +25,10 @@ export default class RemotePlayerManager {
             sprite.setTint(0x333333);
         }
 
-        if (this.scene.sortingGroup) this.scene.sortingGroup.add(sprite);
+        if (this.scene.sortingGroup) {
+            this.scene.sortingGroup.add(sprite);
+            this.scene.sortingGroup.add(weaponSprite);
+        }
         this.otherPlayers.set(info.playerId, { sprite, weaponSprite });
     }
 

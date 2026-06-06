@@ -4,3 +4,4 @@ bug:
 - mob collision entre eux
 - joueur collision mur pas smooth
 - quand un joueur quitte le lobby pas actualiser
+- bruit slime en local qui si frape le joueur local
