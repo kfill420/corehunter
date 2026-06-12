@@ -77,9 +77,34 @@ export default class LobbyScene extends Phaser.Scene {
 
         // Bouton Lancer
         this.btnStart = new MenuButton(this, centerX, 550, "LANCER LA PARTIE !", false, () => {
-            networkManager.startGame(networkManager.currentRoom);
+            networkManager.startGame(networkManager.currentRoom, this.slimeCount);
         });
         this.btnStart.setVisible(false);
+
+        // Gestion des mobs
+        this.slimeCount = 3;
+
+        this.slimeCountTitle = this.add.text(centerX, 630, "Nombre de slimes:", {
+            fontSize: '16px', fill: '#ddd'
+        }).setOrigin(0.5);
+        this.slimeCountTitle.setVisible(false);
+
+        this.slimeCountLabel = this.slimeCountText = this.add.text(centerX, 680, `${this.slimeCount}`, { 
+            fontSize: '24px', fill: '#00ffff', fontStyle: 'bold' 
+        }).setOrigin(0.5);
+        this.slimeCountLabel.setVisible(false);
+        
+        this.slimeCountBtnMin = new MenuButton(this, centerX - 60, 680, "-", false, () => {
+            this.slimeCount = Math.max(1, this.slimeCount - 1);
+            this.slimeCountText.setText(`${this.slimeCount}`);
+        }, 's');
+        this.slimeCountBtnMin.setVisible(false);
+        
+        this.slimeCountBtnPlus = new MenuButton(this, centerX + 60, 680, "+", false, () => {
+            this.slimeCount = Math.min(20, this.slimeCount + 1);
+            this.slimeCountText.setText(`${this.slimeCount}`);
+        }, 's');
+        this.slimeCountBtnPlus.setVisible(false);
 
         // Gestion Clavier
         this.input.keyboard.on('keydown', (event) => {
@@ -115,9 +140,9 @@ export default class LobbyScene extends Phaser.Scene {
             networkManager.cleanupLobbyEvents();
 
             if (this.playerNameTexts) {
-    this.playerNameTexts.forEach(t => t.destroy());
-    this.playerNameTexts = [];
-}
+                this.playerNameTexts.forEach(t => t.destroy());
+                this.playerNameTexts = [];
+            }
         
             if (this.particles) {
                 this.particles.destroy();
@@ -186,6 +211,10 @@ export default class LobbyScene extends Phaser.Scene {
 
     const isHost = networkManager.roomPlayers[0]?.id === networkManager.socket.id;
     this.btnStart.setVisible(isHost);
+    this.slimeCountTitle.setVisible(isHost);
+    this.slimeCountLabel.setVisible(isHost);
+    this.slimeCountBtnMin.setVisible(isHost);
+    this.slimeCountBtnPlus.setVisible(isHost);
 }
 
     _updateCodeDisplay() {

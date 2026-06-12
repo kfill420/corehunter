@@ -149,20 +149,31 @@ class EntityManager {
                 players: {},
                 lastUpdate: Date.now()
             };
-            this.spawnInitialSlimes(roomId);
+            // this.spawnInitialSlimes(roomId);
         }
     }
 
-    spawnInitialSlimes(roomId) {
+    spawnInitialSlimes(roomId, slimeCount = 3) {
+        if (!this.rooms[roomId]) {
+            this.rooms[roomId] = {
+                slimes: {},
+                players: {},
+                lastUpdate: Date.now()
+            };
+            // this.spawnInitialSlimes(roomId);
+        }
+        
         const stats = {
-            1: { hp: 2, speed: 0.03, chaseSpeed: 0.05, range: 18 },
-            2: { hp: 2, speed: 0.05, chaseSpeed: 0.06, range: 15 },
-            3: { hp: 5, speed: 0.02, chaseSpeed: 0.03, range: 22 },
+            1: { hp: 4, speed: 0.03, chaseSpeed: 0.05, range: 18 },
+            2: { hp: 4, speed: 0.05, chaseSpeed: 0.06, range: 15 },
+            3: { hp: 10, speed: 0.02, chaseSpeed: 0.03, range: 22 },
         };
 
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < slimeCount; i++) {
             const id = `slime_${roomId}_${i}`;
             const type = (i % 3) + 1;
+            console.log(this.rooms);
+            console.log(id);
             this.rooms[roomId].slimes[id] = {
                 id: id,
                 type: type,

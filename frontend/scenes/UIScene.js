@@ -10,7 +10,7 @@ export default class UIScene extends Phaser.Scene {
         // Data
         this.maxSlots = 3;
         this.selectedSlot = 0;
-        this.inventory = ['baseball', '', ''];
+        this.inventory = ['baseball', 'bow', ''];
 
         // Lissage
         this.targetData = { hp: 10, maxHp: 10, stamina: 10, maxStamina: 10 };
@@ -112,11 +112,11 @@ export default class UIScene extends Phaser.Scene {
                 const icon = this.make.image({
                     x: x, 
                     y: 0,
-                    key: `${itemKey}-attacking-0`
+                    key: `${itemKey}-inventory`
                 });
 
-                icon.setScale(0.16); 
-                icon.setOrigin(0.57, 0.42); 
+                icon.setScale(0.48); 
+                // icon.setOrigin(0.57, 0.42); 
                 this.inventoryContainer.add(icon);
             }
         }

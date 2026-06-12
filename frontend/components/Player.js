@@ -252,14 +252,21 @@ export default class Player {
         if (!config) return;
 
         const pointer = this.scene.input.activePointer;
+        const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, pointer.worldX, pointer.worldY);
         this.setDualFlip(pointer.worldX < this.sprite.x);
-
         this.isAttacking = true;
         this.stamina -= this.staminaAttackCost;
         this.weaponSprite.setVisible(true);
-        this.scene.sound.play('punch', { volume: 0.4, detune: Phaser.Math.Between(-200, 200) });
-        this.playDualAnim("attack");
+        this.scene.sound.play(config.attackSound, { volume: 0.4, detune: Phaser.Math.Between(-200, 200) });
+        this.playDualAnim(config.attackAnim);
 
+        if (config.type === 'ranged')
+            this._attackRanged(config, pointer, angle);
+        else 
+            this._attackMelee(config, pointer, angle);
+    }
+
+    _attackMelee(config, pointer, angle) {
         if (this.scene.gameMode === 'multi') {
             networkManager.sendAction('playerAttack', {
                 type: 'weapon',
@@ -268,20 +275,15 @@ export default class Player {
             });
         }
 
-        // Calcul de la position de la Hitbox
-        const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, pointer.worldX, pointer.worldY);
         let finalRange = config.range;
         if (angle > 0.5 && angle < 2.5) finalRange *= 0.2;
-
         const hitboxX = this.sprite.x + Math.cos(angle) * finalRange;
         const hitboxY = this.sprite.y + Math.sin(angle) * finalRange + config.offsetY;
-
         this.activeHitbox = this.scene.matter.add.circle(hitboxX, hitboxY, config.radius, { 
             isSensor: true, 
             label: 'heroHitbox' 
         });
-
-        this.sprite.once('animationcomplete-attack', () => {
+        this.sprite.once(`animationcomplete-${config.attackAnim}`, () => {
             this.isAttacking = false;
             this.weaponSprite.setVisible(false);
             if (this.activeHitbox) {
@@ -290,6 +292,71 @@ export default class Player {
             }
             this.scene.remotePlayer?.otherPlayers.forEach(r => r._hitThisAttack = false);
             this.playDualAnim("idle");
+        });
+    };
+
+    _attackRanged(config, pointer, angle) {
+        // Tirer la flèche à la fin de l'animation (frame de lâcher)
+        this.sprite.once(`animationcomplete-${config.attackAnim}`, () => {
+            this.isAttacking = false;
+            this.weaponSprite.setVisible(false);
+            this.playDualAnim("idle");
+        
+            // Spawner la flèche
+            this.scene.arrowManager.shoot(
+                this.sprite.x,
+                this.sprite.y,
+                angle,
+                config.damage,
+                networkManager.socket?.id
+            );
+        
+            if (this.scene.gameMode === 'multi') {
+                networkManager.sendAction('playerShootArrow', {
+                    x: Math.round(this.sprite.x),
+                    y: Math.round(this.sprite.y),
+                    angle,
+                    damage: config.damage
+                });
+            }
+        
+            this.scene.remotePlayer?.otherPlayers.forEach(r => r._hitThisAttack = false);
+        });
+    }
+
+    _ensureWeaponAnims(weaponKey) {
+        const anims = this.scene.anims;
+        const weaponConfig = WEAPON_CONFIG[weaponKey];
+        
+        const animDefs = [
+            { key: 'idle',   textureSuffix: 'idle',      rate: 20,  repeat: -1 },
+            { key: 'walk',   textureSuffix: 'walking',   rate: 44,  repeat: -1 },
+            { key: 'run',    textureSuffix: 'running',   rate: 24,  repeat: -1 },
+            { key: 'kick',   textureSuffix: 'kick',      rate: 24,  repeat: 0  },
+            { key: 'attack', textureSuffix: 'attacking', rate: 30,  repeat: 0  },
+            { key: 'slide',  textureSuffix: 'slide',     rate: 20,  repeat: 0  },
+        ];
+    
+        animDefs.forEach(({ key, textureSuffix, rate, repeat }) => {
+            const weaponAnimKey = `${weaponKey}-${key}`;
+            if (anims.exists(weaponAnimKey)) return;
+            if (!this.scene.textures.exists(`${weaponKey}-${textureSuffix}-0`)) return;
+        
+            // Compter les frames réellement chargées
+            let frameCount = 0;
+            while (this.scene.textures.exists(`${weaponKey}-${textureSuffix}-${frameCount}`)) {
+                frameCount++;
+            }
+            if (frameCount === 0) return;
+        
+            anims.create({
+                key: weaponAnimKey,
+                frames: Array.from({ length: frameCount }, (_, i) => ({
+                    key: `${weaponKey}-${textureSuffix}-${i}`
+                })),
+                frameRate: rate,
+                repeat
+            });
         });
     }
 
@@ -401,7 +468,7 @@ export default class Player {
             networkManager.sendAction('playerMovement', {
                 x: Math.round(this.sprite.x),
                 y: Math.round(this.sprite.y),
-                anim: 'idle', // ou une anim de mort
+                anim: 'idle', // anim de mort
                 flipX: this.sprite.flipX,
                 weapon: this.currentWeapon,
                 isDead: true
@@ -472,6 +539,7 @@ export default class Player {
             if (!weaponKey || weaponKey === '') {
                 this.weaponSprite.setVisible(false);
             } else {
+                this._ensureWeaponAnims(weaponKey);
                 this.weaponSprite.setVisible(true);
                 const currentAnimKey = (this.sprite.anims && this.sprite.anims.currentAnim) 
                     ? this.sprite.anims.currentAnim.key 
