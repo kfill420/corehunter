@@ -69,7 +69,8 @@ function initSocket(server) {
         }
     });
 
-    socket.on("startGameRequest", (roomId) => {
+    socket.on("startGameRequest", ({ roomId, slimeCount }) => {
+      console.log(roomId);
         if (rooms[roomId] && rooms[roomId].host === socket.id) {
             rooms[roomId].gameStarted = true;
 
@@ -78,6 +79,7 @@ function initSocket(server) {
               spawnX: SPAWN_POINTS[index % SPAWN_POINTS.length].x,
               spawnY: SPAWN_POINTS[index % SPAWN_POINTS.length].y,
             }));
+            entityManager.spawnInitialSlimes(roomId, slimeCount)
             io.to(roomId).emit("gameStarted", { players: playersWithSpawn });
         }
     });

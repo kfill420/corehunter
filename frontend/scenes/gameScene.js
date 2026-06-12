@@ -9,6 +9,7 @@ import { networkManager } from '../services/NetworkManager.js';
 import RemotePlayerManager from '../managers/RemotePlayer.js';
 import EnemyManager from '../managers/EnemyManager.js';
 import ArrowManager from '../managers/ArrowManager.js';
+import WEAPON_CONFIG from '../components/WeaponConfig.js';
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -199,8 +200,9 @@ export default class GameScene extends Phaser.Scene {
                     bodyA.label.includes('heroKick') || bodyB.label.includes('heroKick')) {
                     const enemyBody = bodyA.label === 'enemy' ? bodyA : (bodyB.label === 'enemy' ? bodyB : null);
                     if (enemyBody) {
+                        const weaponConfig = WEAPON_CONFIG[this.player.currentWeapon];
                         const enemy = this.enemyManager.enemies.find(e => e.sprite?.body === enemyBody);
-                        enemy?.takeDamage(1);
+                        enemy?.takeDamage(weaponConfig?.damage ?? 1);
                     }
 
                     const hitbox = bodyA.label.includes('hero') ? bodyA : bodyB;

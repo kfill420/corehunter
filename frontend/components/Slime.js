@@ -194,59 +194,59 @@ export default class Slime {
     }
 
     attack(targetId) {
-    if (this.isAttacking || this.isDead) return;
+        if (this.isAttacking || this.isDead) return;
 
-    const isMe = (networkManager.socket.id === targetId);
-    let targetSprite = isMe ? this.scene.player.sprite : this.scene.remotePlayer.otherPlayers.get(targetId);
-    
-    if (!targetSprite || !targetSprite.active) return;
+        const isMe = (networkManager.socket.id === targetId);
+        let targetSprite = isMe ? this.scene.player.sprite : this.scene.remotePlayer.otherPlayers.get(targetId);
+        
+        if (!targetSprite || !targetSprite.active) return;
 
-    // 1. On verrouille l'état tout de suite
-    this.isAttacking = true;
+        // 1. On verrouille l'état tout de suite
+        this.isAttacking = true;
 
-    // 2. On calcule la direction vers la cible pour choisir la bonne animation
-    const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, targetSprite.x, targetSprite.y);
-    const deg = Phaser.Math.RadToDeg(angle);
-    let dir = 'down';
-    if (deg >= -135 && deg <= -45) dir = 'up';
-    else if (deg > -45 && deg < 45) dir = 'right';
-    else if (deg >= 45 && deg <= 135) dir = 'down';
-    else dir = 'left';
+        // 2. On calcule la direction vers la cible pour choisir la bonne animation
+        const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, targetSprite.x, targetSprite.y);
+        const deg = Phaser.Math.RadToDeg(angle);
+        let dir = 'down';
+        if (deg >= -135 && deg <= -45) dir = 'up';
+        else if (deg > -45 && deg < 45) dir = 'right';
+        else if (deg >= 45 && deg <= 135) dir = 'down';
+        else dir = 'left';
 
-    this.lastDir = dir;
+        this.lastDir = dir;
 
-    // 3. On lance l'animation d'attaque
-    this.sprite.play(`slime${this.type}-attack-${dir}`, true);
+        // 3. On lance l'animation d'attaque
+        this.sprite.play(`slime${this.type}-attack-${dir}`, true);
 
-    // 4. Gestion de l'impact (dégâts/sons)
-    const attackFrames = { 1: 6, 2: 7, 3: 4 };
-    const impactFrame = attackFrames[this.type] || 5;
+        // 4. Gestion de l'impact (dégâts/sons)
+        const attackFrames = { 1: 6, 2: 7, 3: 4 };
+        const impactFrame = attackFrames[this.type] || 5;
 
-    const onUpdate = (anim, frame) => {
-        if (frame.index === impactFrame) {
-            const sound = this.type === 3 ? 'ground-explosion' : this.type === 2 ? 'metal-bite' : 'slime-splash';
-            const spatial = this.getSpatialConfig(); 
-            this.scene.sound.play(sound, { volume: 0.2 * spatial.volumeMod, pan: spatial.pan });
+        const onUpdate = (anim, frame) => {
+            if (frame.index === impactFrame) {
+                const sound = this.type === 3 ? 'ground-explosion' : this.type === 2 ? 'metal-bite' : 'slime-splash';
+                const spatial = this.getSpatialConfig(); 
+                this.scene.sound.play(sound, { volume: 0.2 * spatial.volumeMod, pan: spatial.pan });
 
-            if (isMe) {
-                const dist = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, targetSprite.x, targetSprite.y);
-                if (dist < this.attackRange + 15) { 
-                    this.scene.player.takeDamage(this.damage || 1, this.sprite);
+                if (isMe) {
+                    const dist = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, targetSprite.x, targetSprite.y);
+                    if (dist < this.attackRange + 15) { 
+                        this.scene.player.takeDamage(this.damage || 1, this.sprite);
+                    }
                 }
+                this.sprite.off('animationupdate', onUpdate);
             }
-            this.sprite.off('animationupdate', onUpdate);
-        }
-    };
+        };
 
-    this.sprite.on('animationupdate', onUpdate);
+        this.sprite.on('animationupdate', onUpdate);
 
-    // 5. On ne libère isAttacking que quand l'animation est TOTALEMENT terminée
-    this.sprite.once('animationcomplete', (anim) => {
-        if (anim.key.includes('attack')) {
-            this.isAttacking = false;
-        }
-    });
-}
+        // 5. On ne libère isAttacking que quand l'animation est TOTALEMENT terminée
+        this.sprite.once('animationcomplete', (anim) => {
+            if (anim.key.includes('attack')) {
+                this.isAttacking = false;
+            }
+        });
+    }
 
     takeDamage(amount) {
         if (this.isHurt || this.isDead) return;
@@ -268,8 +268,6 @@ export default class Slime {
             this.isHurt = false;
             this.sprite.clearTint();
         });
-
-
     }
 
     die() {

@@ -251,20 +251,22 @@ export default class Player {
         const config = WEAPON_CONFIG[this.currentWeapon];
         if (!config) return;
 
-        if (config.type === 'ranged')
-            this._attackRanged(config);
-        else 
-            this._attackMelee(config);
-    }
-
-    _attackMelee(config) {
         const pointer = this.scene.input.activePointer;
+        const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, pointer.worldX, pointer.worldY);
         this.setDualFlip(pointer.worldX < this.sprite.x);
         this.isAttacking = true;
         this.stamina -= this.staminaAttackCost;
         this.weaponSprite.setVisible(true);
-        this.scene.sound.play('punch', { volume: 0.4, detune: Phaser.Math.Between(-200, 200) });
-        this.playDualAnim("attack");
+        this.scene.sound.play(config.attackSound, { volume: 0.4, detune: Phaser.Math.Between(-200, 200) });
+        this.playDualAnim(config.attackAnim);
+
+        if (config.type === 'ranged')
+            this._attackRanged(config, pointer, angle);
+        else 
+            this._attackMelee(config, pointer, angle);
+    }
+
+    _attackMelee(config, pointer, angle) {
         if (this.scene.gameMode === 'multi') {
             networkManager.sendAction('playerAttack', {
                 type: 'weapon',
@@ -272,7 +274,7 @@ export default class Player {
                 angle: Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, pointer.worldX, pointer.worldY)
             });
         }
-        const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, pointer.worldX, pointer.worldY);
+
         let finalRange = config.range;
         if (angle > 0.5 && angle < 2.5) finalRange *= 0.2;
         const hitboxX = this.sprite.x + Math.cos(angle) * finalRange;
@@ -281,7 +283,7 @@ export default class Player {
             isSensor: true, 
             label: 'heroHitbox' 
         });
-        this.sprite.once('animationcomplete-attack', () => {
+        this.sprite.once(`animationcomplete-${config.attackAnim}`, () => {
             this.isAttacking = false;
             this.weaponSprite.setVisible(false);
             if (this.activeHitbox) {
@@ -293,19 +295,9 @@ export default class Player {
         });
     };
 
-    _attackRanged(config) {
-        const pointer = this.scene.input.activePointer;
-        const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, pointer.worldX, pointer.worldY);
-        this.setDualFlip(pointer.worldX < this.sprite.x);
-        
-        this.isAttacking = true;
-        this.stamina -= this.staminaAttackCost;
-        this.weaponSprite.setVisible(true);
-        this.scene.sound.play('bow_shot', { volume: 0.4 }); // ← remplace par son d'arc quand tu l'auras
-        this.playDualAnim("attack");
-        
+    _attackRanged(config, pointer, angle) {
         // Tirer la flèche à la fin de l'animation (frame de lâcher)
-        this.sprite.once('animationcomplete-attack', () => {
+        this.sprite.once(`animationcomplete-${config.attackAnim}`, () => {
             this.isAttacking = false;
             this.weaponSprite.setVisible(false);
             this.playDualAnim("idle");

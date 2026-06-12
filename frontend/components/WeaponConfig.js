@@ -3,14 +3,14 @@ const WEAPON_CONFIG = {
         range: 6,
         radius: 5,
         offsetY: 0,
-        damage: 3,
+        damage: 1,
         animationKey: 'kick'
     },
     'baseball': {
         range: 10,
         radius: 9,
         offsetY: 0,
-        damage: 10,
+        damage: 2,
         animationKey: 'attacking',
         attackAnim: 'attack',
         attackSound: 'punch'
@@ -23,14 +23,14 @@ const WEAPON_CONFIG = {
         animationKey: 'stabbing'
     },
     'bow': {
-        damage: 8,
+        damage: 1,
         animationKey: 'attacking',
         type: 'ranged', 
         projectileSpeed: 8,
         projectileRange: 500,
         projectileRadius: 1,
         attackAnim: 'attack',
-        attackSound: 'bow_fire',
+        attackSound: 'bow_shot',
         animeFrameCounts: {
             idle: 1,
             attack: 1,

@@ -18,7 +18,12 @@ class NetworkManager {
     joinRoom(roomId) { 
         this.socket.emit("joinRoom", roomId.toUpperCase()); 
     }
-    startGame(roomId) { this.socket.emit("startGameRequest", roomId); }
+    startGame(roomId, slimeCount = 3) { 
+        this.socket.emit("startGameRequest", { 
+            roomId, 
+            slimeCount
+        }); 
+    }
 
     cleanupLobbyEvents() {
         if (this.socket) {

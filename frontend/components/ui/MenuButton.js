@@ -5,7 +5,7 @@
  */
 
 export default class MenuButton extends Phaser.GameObjects.Container {
-    constructor(scene, x, y, label, isLocked, callback) {
+    constructor(scene, x, y, label, isLocked, callback, size='m') {
         super(scene, x, y);
 
         this.label = label;
@@ -13,8 +13,14 @@ export default class MenuButton extends Phaser.GameObjects.Container {
         this.callback = callback;
         
         // Configuration
-        this.btnWidth = 400;
-        this.btnHeight = 60;
+        if (size === 'm') {
+            this.btnWidth = 400;
+            this.btnHeight = 60;
+        } else if (size === 's') {
+            this.btnWidth = 40;
+            this.btnHeight = 40;
+        }
+        
         this.colorNormal = 0x1e1e82;
         this.colorHover = 0x3d3dbd;
         this.strokeNormal = isLocked ? 0x444444 : 0x00ffff;
