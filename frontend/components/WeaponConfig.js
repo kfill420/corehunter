@@ -11,7 +11,9 @@ const WEAPON_CONFIG = {
         radius: 9,
         offsetY: 0,
         damage: 10,
-        animationKey: 'attacking'
+        animationKey: 'attacking',
+        attackAnim: 'attack',
+        attackSound: 'punch'
     },
     'knife': {
         range: 12,
@@ -19,6 +21,24 @@ const WEAPON_CONFIG = {
         offsetY: 0,
         damage: 5,
         animationKey: 'stabbing'
+    },
+    'bow': {
+        damage: 8,
+        animationKey: 'attacking',
+        type: 'ranged', 
+        projectileSpeed: 8,
+        projectileRange: 500,
+        projectileRadius: 1,
+        attackAnim: 'attack',
+        attackSound: 'bow_fire',
+        animeFrameCounts: {
+            idle: 1,
+            attack: 1,
+            walk: 1,
+            run: 1,
+            kick: 1,
+            slide: 1
+        }
     }
 };
 

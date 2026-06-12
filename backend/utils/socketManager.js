@@ -128,7 +128,15 @@ function initSocket(server) {
         attackerX,
         attackerY
       });
-    })
+    });
+
+    socket.on("playerShootArrow", (data) => {
+      const roomId = data.roomId;
+      socket.to(roomId).emit("remoteArrow", {
+        ...data,
+        shooterId: socket.id
+      });
+    });
 
     socket.on("leaveGameManual", () => {
         console.log(`[Server] Départ manuel du joueur : ${socket.id}`);

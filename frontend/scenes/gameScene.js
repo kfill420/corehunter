@@ -8,6 +8,7 @@ import { setupWorld, applyYSorting } from '../components/WorldUtils.js';
 import { networkManager } from '../services/NetworkManager.js';
 import RemotePlayerManager from '../managers/RemotePlayer.js';
 import EnemyManager from '../managers/EnemyManager.js';
+import ArrowManager from '../managers/ArrowManager.js';
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -30,6 +31,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.remotePlayer = new RemotePlayerManager(this);
         this.enemyManager = new EnemyManager(this);
+        this.arrowManager = new ArrowManager(this);
 
         // 3. Initialisation des systèmes (Caméra, Controls, UI)
         this._setupSystems(map);
@@ -55,6 +57,7 @@ export default class GameScene extends Phaser.Scene {
             this.player.update(null, this.keys, delta, this.staticBodies);
             this.enemyManager.update();
             this.remotePlayer.interpolate();
+            this.arrowManager.update();
 
             if (this.gameMode === 'multi' && this.player.isAttacking && this.player.activeHitbox) {
                 this._checkPvPHits();

@@ -42,7 +42,16 @@ export default class PreloadScene extends Phaser.Scene {
         this.load.setPath('./assets/'); 
         this._loadEnemies([1, 2, 3]);
         this._loadHeroAnimations();
-        this._loadWeaponAnimations('baseball');
+        this.load.image('arrow', 'ammo/arrow.png');
+        this._loadWeaponAnimations('baseball', [
+            { key: 'attacking', folder: 'attacking', prefix: 'baseball_attacking', count: 11 },
+            { key: 'idle',      folder: 'idle',      prefix: 'baseball_idle',      count: 17 },
+        ]);
+
+        this._loadWeaponAnimations('bow', [
+            { key: 'attacking', folder: 'attacking', prefix: 'bow_attacking', count: 0 },
+            { key: 'idle',      folder: 'idle',      prefix: 'bow_idle',      count: 0 },
+        ]);
 
         // 6. CHARGEMENT AUDIO
         this._loadAudio();
@@ -118,19 +127,14 @@ export default class PreloadScene extends Phaser.Scene {
         });
     }
 
-    _loadWeaponAnimations(weaponName) {
-        const weaponPath = `weapons/${weaponName}/`;
-        const anims = [
-            { key: 'attacking', folder: 'attacking', prefix: `0_Forest_Ranger_Baseball`, count: 11 },
-            { key: 'idle', folder: 'idle', prefix: `0_Forest_Ranger_Idle`, count: 17 }
-        ];
-
-        anims.forEach(anim => {
-            for (let i = 0; i <= anim.count; i++) {
-                const num = i.toString().padStart(3, "0");
-                this.load.image(`${weaponName}-${anim.key}-${i}`, `${weaponPath}${anim.folder}/${anim.prefix}_${num}.png`);
-            }
-        });
+    _loadWeaponAnimations(weaponName, animConfigs) {
+        this.load.image(`${weaponName}-inventory`, `weapons/${weaponName}/inventory/${weaponName}.png`);
+        animConfigs.forEach(anim => {
+        for (let i = 0; i <= anim.count; i++) {
+            const num = i.toString().padStart(3, "0");
+            this.load.image(`${weaponName}-${anim.key}-${i}`, `weapons/${weaponName}/${anim.folder}/${anim.prefix}_${num}.png`);
+        }
+    });
     }
 
     _loadAudio() {
@@ -138,7 +142,7 @@ export default class PreloadScene extends Phaser.Scene {
         this.load.setPath('./assets/sounds/');
         const sounds = [
             'step', 'punch', 'slime-move', 'hurt', 'death-player', 
-            'death-mob', 'slime-hit', 'ground-explosion', 'metal-bite', 'slime-splash'
+            'death-mob', 'slime-hit', 'ground-explosion', 'metal-bite', 'slime-splash', 'bow_shot'
         ];
         sounds.forEach(s => this.load.audio(s, `${s}.mp3`));
         
