@@ -149,7 +149,6 @@ class EntityManager {
                 players: {},
                 lastUpdate: Date.now()
             };
-            // this.spawnInitialSlimes(roomId);
         }
     }
 
@@ -160,9 +159,8 @@ class EntityManager {
                 players: {},
                 lastUpdate: Date.now()
             };
-            // this.spawnInitialSlimes(roomId);
         }
-        
+
         const stats = {
             1: { hp: 4, speed: 0.03, chaseSpeed: 0.05, range: 18 },
             2: { hp: 4, speed: 0.05, chaseSpeed: 0.06, range: 15 },

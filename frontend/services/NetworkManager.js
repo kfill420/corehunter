@@ -160,8 +160,15 @@ class NetworkManager {
 
             // Si c'est le joueur local qui est touché
             if (data.targetId === this.socket.id) {
-                const attackerSource = { x: data.attackerX, y: data.attackerY }
-                scene.player.takeDamage(data.damage, attackerSource);
+                const source = (data.attackerX !== undefined) 
+                    ? { x: data.attackerX, y: data.attackerY } 
+                    : null;
+                        
+                const knockbackAngle = (data.knockbackAngle !== undefined && isFinite(data.knockbackAngle))
+                    ? data.knockbackAngle
+                    : null;
+                        
+                scene.player.takeDamage(data.damage, source, knockbackAngle);
                 return;
             }
         

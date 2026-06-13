@@ -12,8 +12,10 @@ export default class MenuScene extends Phaser.Scene {
     }
 
     preload() {
-        // Particules
-        this.load.image('particle', './assets/character/forest_ranger/3/idle/0_Forest_Ranger_Idle_000.png');
+        this.load.image('particle_0', './assets/character/forest_ranger/3/idle/0_Forest_Ranger_Idle_000.png');
+        this.load.image('particle_1', './assets/mobs/Slimes/1/Slime1_icon_hd.png');
+        this.load.image('particle_2', './assets/mobs/Slimes/2/Slime2_icon.png');
+        this.load.image('particle_3', './assets/mobs/Slimes/3/Slime3_icon.png');
     }
 
     create() {
@@ -53,7 +55,19 @@ export default class MenuScene extends Phaser.Scene {
     }
 
     _setupParticles(width, height) {
-        this.particles = this.add.particles(0, 0, 'particle', {
+        this.particles = this.add.particles(0, 0, 'particle_0', {
+            // texture: ['particle_0', 'particle_1', 'particle_2', 'particle_3'],
+            // texture: ['particle_1'],
+            x: { min: 0, max: width },
+            y: { min: 0, max: height },
+            lifespan: 4000,
+            speedY: { min: -20, max: -40 },
+            scale: { start: 0.03, end: 0 },
+            alpha: { start: 0.3, end: 0 },
+            frequency: 150,
+            blendMode: 'ADD'
+        });
+        this.particles = this.add.particles(0, 0, 'particle_1', {
             x: { min: 0, max: width },
             y: { min: 0, max: height },
             lifespan: 4000,

@@ -4,6 +4,7 @@
  */
 
 import { networkManager } from '../services/NetworkManager.js';
+import { playSound } from '../services/SoundUtil.js';
 
 export default class Slime {
     constructor(scene, x, y, type = 1, id) {
@@ -182,11 +183,12 @@ export default class Slime {
         // Déclenche le son sur une frame précise de l'anim de course
         if (frame === 4 && !this.hasPlayedMoveSound) {
             const spatial = this.getSpatialConfig();
-            this.scene.sound.play('slime-move', { 
-                volume: 0.1 * spatial.volumeMod, 
-                pan: spatial.pan,
-                rate: Phaser.Math.FloatBetween(0.8, 1.2)
-            });
+            if (spatial.volumeMod > 0.01)
+                playSound(this.scene, 'slime-move', { 
+                    volume: 0.1 * spatial.volumeMod, 
+                    pan: spatial.pan, 
+                    rate: Phaser.Math.FloatBetween(0.8, 1.2) 
+                });
             this.hasPlayedMoveSound = true;
         } else if (frame !== 4) {
             this.hasPlayedMoveSound = false;
@@ -226,7 +228,8 @@ export default class Slime {
             if (frame.index === impactFrame) {
                 const sound = this.type === 3 ? 'ground-explosion' : this.type === 2 ? 'metal-bite' : 'slime-splash';
                 const spatial = this.getSpatialConfig(); 
-                this.scene.sound.play(sound, { volume: 0.2 * spatial.volumeMod, pan: spatial.pan });
+                // this.scene.sound.play(sound, { volume: 0.2 * spatial.volumeMod, pan: spatial.pan });
+                playSound(this.scene, sound, { volume: 0.2 * spatial.volumeMod, pan: spatial.pan });
 
                 if (isMe) {
                     const dist = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, targetSprite.x, targetSprite.y);
@@ -301,6 +304,9 @@ export default class Slime {
     // Calcule le volume et le pan en fonction de la position à l'écran
     getSpatialConfig() {
         const cam = this.scene.cameras.main;
+            if (!cam || !cam.midPoint || cam.width === 0) {
+            return { volumeMod: 0, pan: 0 };
+        }
         const dist = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, cam.midPoint.x, cam.midPoint.y);
         const volumeMod = Phaser.Math.Clamp(1 - (dist / 350), 0, 1);
         const pan = Phaser.Math.Clamp((this.sprite.x - cam.midPoint.x) / (cam.width / 2), -1, 1);

@@ -83,13 +83,15 @@ export default class GameScene extends Phaser.Scene {
             if (!remote.sprite.active) return;
             if (remote._hitThisAttack) return;
         
-            const remoteBody = remote.sprite.body;
-            if (!remoteBody) return;
-            const remoteRadius = remoteBody.circleRadius;
+            const hurtbox = remote.hurtbox;
+            if (!hurtbox) return;
+            const bounds = hurtbox.bounds;
+            const closestX = Math.max(bounds.min.x, Math.min(hx, bounds.max.x));
+            const closestY = Math.max(bounds.min.y, Math.min(hy, bounds.max.y));
         
-            const dist = Phaser.Math.Distance.Between(hx, hy, remote.sprite.x, remote.sprite.y);
+            const dist = Phaser.Math.Distance.Between(hx, hy, closestX, closestY);
         
-            if (dist < hitRadius + remoteRadius) {
+            if (dist < hitRadius) {
                 remote._hitThisAttack = true;
                 networkManager.sendAction('playerHitPlayer', {
                     targetId: playerId,
@@ -211,10 +213,12 @@ export default class GameScene extends Phaser.Scene {
                     const remoteEntry = [...this.remotePlayer.otherPlayers.values()]
                         .find(r => r.sprite.body === other);
 
-                    if (remoteEntry) {
+                    if (remoteEntry && !remoteEntry._hitThisAttack) {
                         networkManager.sendAction('playerHitPlayer', {
                             targetId: remoteEntry.sprite.playerId,
                             damage: 1,
+                            attackerX: this.player.sprite.x,
+                            attackerY: this.player.sprite.y
                         });
                     }
                 }

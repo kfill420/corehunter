@@ -15,6 +15,10 @@ export default class Arrow {
             shape: {
                 type: 'circle',
                 radius: 4
+            },
+            collisionFilter: {
+                category: 0x0004,
+                mask: 0x0001
             }
         });
         this.sprite.setScale(0.04);
