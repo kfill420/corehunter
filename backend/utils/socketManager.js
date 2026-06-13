@@ -122,13 +122,14 @@ function initSocket(server) {
     });
 
     socket.on("playerHitPlayer", (data) => {
-      const { targetId, damage, roomId, attackerX, attackerY } = data;
+      const { targetId, damage, roomId, attackerX, attackerY, knockbackAngle } = data;
       io.to(roomId).emit("playerTookDamage", {
         targetId,
         damage,
         attackerId: socket.id,
         attackerX,
-        attackerY
+        attackerY,
+        knockbackAngle
       });
     });
 

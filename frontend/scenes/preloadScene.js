@@ -3,6 +3,8 @@
  * @description Gère le chargement centralisé des assets. 
  */
 
+import { WEAPON_ANIMS } from "../services/AnimConfig.js";
+
 export default class PreloadScene extends Phaser.Scene {
     constructor() {
         super({ key: 'PreloadScene' });
@@ -43,15 +45,9 @@ export default class PreloadScene extends Phaser.Scene {
         this._loadEnemies([1, 2, 3]);
         this._loadHeroAnimations();
         this.load.image('arrow', 'ammo/arrow.png');
-        this._loadWeaponAnimations('baseball', [
-            { key: 'attacking', folder: 'attacking', prefix: 'baseball_attacking', count: 11 },
-            { key: 'idle',      folder: 'idle',      prefix: 'baseball_idle',      count: 17 },
-        ]);
-
-        this._loadWeaponAnimations('bow', [
-            { key: 'attacking', folder: 'attacking', prefix: 'bow_attacking', count: 0 },
-            { key: 'idle',      folder: 'idle',      prefix: 'bow_idle',      count: 0 },
-        ]);
+        Object.entries(WEAPON_ANIMS).forEach(([weaponName, animConfigs]) => {
+            this._loadWeaponAnimations(weaponName, animConfigs);
+        })
 
         // 6. CHARGEMENT AUDIO
         this._loadAudio();
@@ -116,6 +112,7 @@ export default class PreloadScene extends Phaser.Scene {
             { key: 'run', folder: 'running', prefix: 'Running', count: 11 },
             { key: 'kick', folder: 'kicking', prefix: 'Kicking', count: 11 },
             { key: 'attack', folder: 'attacking', prefix: 'Attacking', count: 11 },
+            { key: 'shoot', folder: 'shoot', prefix: 'Shoot', count: 17 },
             { key: 'slide', folder: 'sliding', prefix: 'Sliding', count: 5 }
         ];
 

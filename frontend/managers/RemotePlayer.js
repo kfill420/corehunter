@@ -13,7 +13,20 @@ export default class RemotePlayerManager {
         sprite.setOrigin(0.5, 0.8);
         sprite.setFixedRotation();
         sprite.setStatic(true);
+        sprite.setCollisionCategory(0x0001);
+        sprite.setCollidesWith([0x0001, 0x0002]);
         sprite.playerId = info.playerId;
+
+        const hurtbox = this.scene.matter.add.rectangle(info.x, info.y, 12, 20, {
+            isSensor: true,
+            label: 'remoteHurtbox',
+            isStatic: true,
+        });
+        hurtbox.playerId = info.playerId;
+        this.scene.matter.body.setPosition(hurtbox, { 
+            x: info.x, 
+            y: info.y - 10
+        });
 
         const weaponSprite = this.scene.add.sprite(info.x, info.y, '');
         weaponSprite.setScale(0.04);
@@ -29,7 +42,7 @@ export default class RemotePlayerManager {
             this.scene.sortingGroup.add(sprite);
             this.scene.sortingGroup.add(weaponSprite);
         }
-        this.otherPlayers.set(info.playerId, { sprite, weaponSprite });
+        this.otherPlayers.set(info.playerId, { sprite, weaponSprite, hurtbox });
     }
 
     update(playerInfo) {
@@ -53,7 +66,7 @@ export default class RemotePlayerManager {
     interpolate() {
         this.otherPlayers.forEach((remote) => {
             if (!remote.sprite.active) return;
-            const { sprite, weaponSprite } = remote;
+            const { sprite, weaponSprite, hurtbox } = remote;
 
             if (remote.targetX === undefined) return;
 
@@ -64,6 +77,13 @@ export default class RemotePlayerManager {
                 Phaser.Math.Linear(sprite.y, remote.targetY, lerpFactor)
             );
 
+            if (hurtbox) {
+                this.scene.matter.body.setPosition(hurtbox, { 
+                    x: sprite.x, 
+                    y: sprite.y - 10
+                });
+            }
+
             weaponSprite.setPosition(sprite.x, sprite.y);
             weaponSprite.setDepth(sprite.depth - 0.1);
             weaponSprite.setFlipX(sprite.flipX);
@@ -73,6 +93,18 @@ export default class RemotePlayerManager {
                 sprite.setTint(0x333333);
                 sprite.anims.stop();
                 weaponSprite.setVisible(false);
+                // if (this.scene.sortingGroup) {
+                //     this.scene.sortingGroup.remove(sprite, false);
+                //     this.scene.sortingGroup.remove(weaponSprite, false);
+                // }
+                // if (remote.hurtbox) {
+                //     this.scene.matter.world.remove(remote.hurtbox);
+                //     remote.hurtbox = null;
+                // }
+                // if (sprite.body) {
+                //     this.scene.matter.world.remove(sprite.body);
+                //     sprite.body = null;
+                // }
             } else {
                 sprite.setAngle(0);
                 sprite.clearTint();
@@ -105,8 +137,9 @@ export default class RemotePlayerManager {
         if (!remote) return;
 
         this.otherPlayers.delete(playerId);
+        const { sprite, weaponSprite, hurtbox } = remote;
 
-        const { sprite, weaponSprite } = remote;
+        if (hurtbox) this.scene.matter.world.remove(hurtbox);
 
         if (this.scene.sortingGroup) this.scene.sortingGroup.remove(sprite, false);
 

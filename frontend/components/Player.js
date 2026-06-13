@@ -1,5 +1,8 @@
 import WEAPON_CONFIG from './WeaponConfig.js';
 import { networkManager } from '../services/NetworkManager.js';
+import { handleMeleeAttack, handleRangeAttack } from '../services/CombatSystem.js';
+import { playSound } from '../services/SoundUtil.js';
+import { HERO_ANIMS, TEXTURE_SUFFIX } from '../services/AnimConfig.js';
 
 /**
  * @class Player
@@ -87,6 +90,7 @@ export default class Player {
                 const weaponKey = `${this.currentWeapon}-${key}`;
                 let textureSuffix = key;
                 // Mapping des suffixes de textures pour correspondre au Preload
+                if (key === "shoot") textureSuffix = "shoot";
                 if (key === "attack") textureSuffix = "attacking";
                 if (key === "walk") textureSuffix = "walking";
                 if (key === "run") textureSuffix = "running";
@@ -106,13 +110,36 @@ export default class Player {
             }
         };
 
-        // Génération de la bibliothèque d'animations
-        createDoubleAnim("idle", 18, 20);
-        createDoubleAnim("walk", 24, 44);
-        createDoubleAnim("run", 12, 24);
-        createDoubleAnim("kick", 12, 24, 0);
-        createDoubleAnim("attack", 12, 30, 0);
-        createDoubleAnim("slide", 6, 20, 0);
+        HERO_ANIMS.forEach(({ key, length, rate, repeat }) => {
+            // Animation héros
+            if (!anims.exists(key)) {
+                anims.create({
+                    key,
+                    frames: Array.from({ length }, (_, i) => ({ key: `hero-${key}-${i}` })),
+                    frameRate: rate,
+                    repeat
+                });
+            }
+        
+            // Animation arme
+            if (this.currentWeapon && this.currentWeapon !== '') {
+                const weaponKey = `${this.currentWeapon}-${key}`;
+                const textureSuffix = TEXTURE_SUFFIX[key] ?? key;
+            
+                if (this.scene.textures.exists(`${this.currentWeapon}-${textureSuffix}-0`)) {
+                    if (!anims.exists(weaponKey)) {
+                        anims.create({
+                            key: weaponKey,
+                            frames: Array.from({ length }, (_, i) => ({
+                                key: `${this.currentWeapon}-${textureSuffix}-${i}`
+                            })),
+                            frameRate: rate,
+                            repeat
+                        });
+                    }
+                }
+            }
+        });
 
         this.playDualAnim("idle");
     }
@@ -202,7 +229,8 @@ export default class Player {
                     this.setDualFlip(vx < 0);
                     // Bruitages de pas
                     if (!this.scene.sound.get('step')?.isPlaying) {
-                        this.scene.sound.play('step', { volume: 0.1, rate: anim === "run" ? 1.5 : 1.2 });
+                        // this.scene.sound.play('step', { volume: 0.1, rate: anim === "run" ? 1.5 : 1.2 });
+                        playSound(this.scene, 'step', { volume: 0.1, rate: anim === "run" ? 1.5 : 1.2 });
                     }
                 } else {
                     this.playDualAnim("idle");
@@ -257,98 +285,32 @@ export default class Player {
         this.isAttacking = true;
         this.stamina -= this.staminaAttackCost;
         this.weaponSprite.setVisible(true);
-        this.scene.sound.play(config.attackSound, { volume: 0.4, detune: Phaser.Math.Between(-200, 200) });
+        // this.scene.sound.play(config.attackSound, { volume: 0.4, detune: Phaser.Math.Between(-200, 200) });
+        playSound(this.scene, config.attackSound, { volume: 0.4, detune: Phaser.Math.Between(-200, 200) });
         this.playDualAnim(config.attackAnim);
 
-        if (config.type === 'ranged')
-            this._attackRanged(config, pointer, angle);
+        if (config.type === 'melee')
+            handleMeleeAttack(this, config, pointer, angle);
         else 
-            this._attackMelee(config, pointer, angle);
-    }
-
-    _attackMelee(config, pointer, angle) {
-        if (this.scene.gameMode === 'multi') {
-            networkManager.sendAction('playerAttack', {
-                type: 'weapon',
-                weapon: this.currentWeapon,
-                angle: Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, pointer.worldX, pointer.worldY)
-            });
-        }
-
-        let finalRange = config.range;
-        if (angle > 0.5 && angle < 2.5) finalRange *= 0.2;
-        const hitboxX = this.sprite.x + Math.cos(angle) * finalRange;
-        const hitboxY = this.sprite.y + Math.sin(angle) * finalRange + config.offsetY;
-        this.activeHitbox = this.scene.matter.add.circle(hitboxX, hitboxY, config.radius, { 
-            isSensor: true, 
-            label: 'heroHitbox' 
-        });
-        this.sprite.once(`animationcomplete-${config.attackAnim}`, () => {
-            this.isAttacking = false;
-            this.weaponSprite.setVisible(false);
-            if (this.activeHitbox) {
-                this.scene.matter.world.remove(this.activeHitbox);
-                this.activeHitbox = null;
-            }
-            this.scene.remotePlayer?.otherPlayers.forEach(r => r._hitThisAttack = false);
-            this.playDualAnim("idle");
-        });
-    };
-
-    _attackRanged(config, pointer, angle) {
-        // Tirer la flèche à la fin de l'animation (frame de lâcher)
-        this.sprite.once(`animationcomplete-${config.attackAnim}`, () => {
-            this.isAttacking = false;
-            this.weaponSprite.setVisible(false);
-            this.playDualAnim("idle");
-        
-            // Spawner la flèche
-            this.scene.arrowManager.shoot(
-                this.sprite.x,
-                this.sprite.y,
-                angle,
-                config.damage,
-                networkManager.socket?.id
-            );
-        
-            if (this.scene.gameMode === 'multi') {
-                networkManager.sendAction('playerShootArrow', {
-                    x: Math.round(this.sprite.x),
-                    y: Math.round(this.sprite.y),
-                    angle,
-                    damage: config.damage
-                });
-            }
-        
-            this.scene.remotePlayer?.otherPlayers.forEach(r => r._hitThisAttack = false);
-        });
+            handleRangeAttack(this, config, pointer, angle);
     }
 
     _ensureWeaponAnims(weaponKey) {
         const anims = this.scene.anims;
-        const weaponConfig = WEAPON_CONFIG[weaponKey];
-        
-        const animDefs = [
-            { key: 'idle',   textureSuffix: 'idle',      rate: 20,  repeat: -1 },
-            { key: 'walk',   textureSuffix: 'walking',   rate: 44,  repeat: -1 },
-            { key: 'run',    textureSuffix: 'running',   rate: 24,  repeat: -1 },
-            { key: 'kick',   textureSuffix: 'kick',      rate: 24,  repeat: 0  },
-            { key: 'attack', textureSuffix: 'attacking', rate: 30,  repeat: 0  },
-            { key: 'slide',  textureSuffix: 'slide',     rate: 20,  repeat: 0  },
-        ];
-    
-        animDefs.forEach(({ key, textureSuffix, rate, repeat }) => {
+
+        HERO_ANIMS.forEach(({ key, rate, repeat }) => {
             const weaponAnimKey = `${weaponKey}-${key}`;
             if (anims.exists(weaponAnimKey)) return;
+
+            const textureSuffix = TEXTURE_SUFFIX[key] ?? key;
             if (!this.scene.textures.exists(`${weaponKey}-${textureSuffix}-0`)) return;
-        
-            // Compter les frames réellement chargées
+
             let frameCount = 0;
             while (this.scene.textures.exists(`${weaponKey}-${textureSuffix}-${frameCount}`)) {
                 frameCount++;
             }
             if (frameCount === 0) return;
-        
+
             anims.create({
                 key: weaponAnimKey,
                 frames: Array.from({ length: frameCount }, (_, i) => ({
@@ -372,7 +334,8 @@ export default class Player {
 
         this.isAttacking = true;
         this.stamina -= this.staminaKickCost;
-        this.scene.sound.play('punch', { volume: 0.3, detune: Phaser.Math.Between(-200, 200) });
+        // this.scene.sound.play('punch', { volume: 0.3, detune: Phaser.Math.Between(-200, 200) });
+        playSound(this.scene, 'punch', { volume: 0.3, detune: Phaser.Math.Between(-200, 200) });
         this.playDualAnim("kick");
 
         if (this.scene.gameMode === 'multi') {
@@ -421,26 +384,33 @@ export default class Player {
     }
 
     // Appelé par les ennemis pour infliger des dégâts
-    takeDamage(amount, source) {
+    takeDamage(amount, source, knockbackAngle) {
         if (this.isInvulnerable || this.hp <= 0 || this.isDead) return;
 
         this.lastDamageTime = this.scene.time.now;
         this.hp = Math.max(0, this.hp - amount);
         this.isInvulnerable = true;
         this.isStunned = true;
-
-        this.scene.sound.play('hurt', { 
-            volume: 0.8,
-            detune: Phaser.Math.Between(-200, 200)
-         });
+        playSound(this.scene, 'hurt', { volume: 0.8, detune: Phaser.Math.Between(-200, 200)});
         this.sprite.setTint(0xff0000);
 
         // Knockback
-        if (source) {
-            const angle = Phaser.Math.Angle.Between(source.x, source.y, this.sprite.x, this.sprite.y);
-            this.scene.matter.body.setVelocity(this.body, { 
-                x: Math.cos(angle) * 2, 
-                y: Math.sin(angle) * 2 
+        let angle = null;
+        if (knockbackAngle !== null && isFinite(knockbackAngle)) {
+            // Angle direct de la flèche — le plus précis
+            angle = knockbackAngle;
+        } else if (source) {
+            const sx = source?.x ?? source?.position?.x;
+            const sy = source?.y ?? source?.position?.y;
+            if (isFinite(sx) && isFinite(sy) && isFinite(this.sprite.x) && isFinite(this.sprite.y)) {
+                angle = Phaser.Math.Angle.Between(sx, sy, this.sprite.x, this.sprite.y);
+            }
+        }
+
+        if (angle !== null && isFinite(angle)) {
+            this.scene.matter.body.setVelocity(this.body, {
+                x: Math.cos(angle) * 2,
+                y: Math.sin(angle) * 2
             });
         }
 
@@ -482,7 +452,8 @@ export default class Player {
 
         this.sprite.anims.stop();
 
-        this.scene.sound.play('death-player', { volume: 0.5 });
+        // this.scene.sound.play('death-player', { volume: 0.5 });
+        playSound(this.scene, 'death-player', { volume: 0.5 });
         this.weaponSprite.setVisible(false);
         this.sprite.setTint(0x333333);
         this.sprite.setAngle(90); // Le perso "tombe"

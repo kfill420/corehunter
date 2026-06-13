@@ -47,7 +47,7 @@ export const setupWorld = (scene, map) => {
 export const applyYSorting = (group, heroSprite) => {
     if (!group) return;
     group.getChildren().forEach(child => {
-        if (!child || !child.active || !child.visible || !child.texture) return;
+        if (!child || !child.active || !child.visible || !child.texture || child.body) return;
         const isEntity = (child === heroSprite) 
             || (child.body && !child.body.isStatic) 
             || child.playerId;
