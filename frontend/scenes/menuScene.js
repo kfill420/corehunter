@@ -90,6 +90,15 @@ export default class MenuScene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         this.btnSolo = new MenuButton(this, width / 2, height * 0.5, 'SOLOPLAYER', false, () => {
+            // Coupe une éventuelle session multi restée ouverte pour ne pas recevoir ses événements
+            if (networkManager.socket) {
+                networkManager.socket.emit("leaveGameManual");
+                networkManager.socket.removeAllListeners();
+                networkManager.socket.disconnect();
+                networkManager.socket = null;
+                networkManager.currentRoom = null;
+                networkManager.pendingPlayers = null;
+            }
             this.scene.start('PreloadScene', { mode: 'solo' });
         });
 

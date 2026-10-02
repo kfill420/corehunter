@@ -8,7 +8,7 @@ export default class ArrowManager {
         this.arrows = [];
 
         // Écouter les flèches des autres joueurs
-        networkManager.socket.on('remoteArrow', (data) => {
+        if (scene.gameMode === 'multi') networkManager.socket.on('remoteArrow', (data) => {
             const arrow = this.shoot(data.x, data.y, data.angle, data.damage, data.shooterId);
             // Flèche distante = purement visuelle, pas de collision
             if (arrow?.sprite?.body) {

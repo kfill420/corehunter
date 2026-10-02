@@ -9,6 +9,7 @@ import { networkManager } from '../services/NetworkManager.js';
 import RemotePlayerManager from '../managers/RemotePlayer.js';
 import EnemyManager from '../managers/EnemyManager.js';
 import ArrowManager from '../managers/ArrowManager.js';
+import SoloSlimeSimulator from '../managers/SoloSlimeSimulator.js';
 import WEAPON_CONFIG from '../components/WeaponConfig.js';
 
 export default class GameScene extends Phaser.Scene {
@@ -47,7 +48,9 @@ export default class GameScene extends Phaser.Scene {
                 networkManager.pendingPlayers = null;
             }
             networkManager.requestCurrentPlayers();
-            networkManager.socket.emit("requestSlimes", { roomId: this.roomId }); 
+            networkManager.socket.emit("requestSlimes", { roomId: this.roomId });
+        } else {
+            this.soloSimulator = new SoloSlimeSimulator(this, this.enemyManager);
         }
     }
 
@@ -56,6 +59,7 @@ export default class GameScene extends Phaser.Scene {
 
         if (!isPaused && this.player) {
             this.player.update(null, this.keys, delta, this.staticBodies);
+            this.soloSimulator?.update(delta);
             this.enemyManager.update();
             this.remotePlayer.interpolate();
             this.arrowManager.update();
