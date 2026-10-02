@@ -198,7 +198,7 @@ export default class Slime {
     attack(targetId) {
         if (this.isAttacking || this.isDead) return;
 
-        const isMe = (networkManager.socket.id === targetId);
+        const isMe = this.scene.gameMode === 'solo' || networkManager.socket?.id === targetId;
         let targetSprite = isMe ? this.scene.player.sprite : this.scene.remotePlayer.otherPlayers.get(targetId);
         
         if (!targetSprite || !targetSprite.active) return;
@@ -256,6 +256,8 @@ export default class Slime {
 
         if (this.scene.gameMode === 'multi')
             networkManager.sendHit(this.id, amount);
+        else
+            this.scene.soloSimulator?.hit(this.id, amount);
 
         this.isHurt = true;
         this.sprite.setTint(0xff0000);
